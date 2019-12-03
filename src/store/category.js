@@ -22,20 +22,20 @@ export default {
         throw e
       }
     },
-    async updateCategory ({ commit, dispatch }, { title, limit, id }) {
+    async updateCategory ({ commit, dispatch }, { title, limit, id, fio, phoneNumberC, addressClient, someBuy, summDeal, tkClient, commentWrite }) {
       try {
         const uid = await dispatch('getUid')
-        await firebase.database().ref(`/users/${uid}/categories`).child(id).update({ title, limit })
+        await firebase.database().ref(`/users/${uid}/categories`).child(id).update({ title, limit, fio, phoneNumberC, addressClient, someBuy, summDeal, tkClient, commentWrite })
       } catch (e) {
         commit('setError', e)
         throw e
       }
     },
-    async createCategory ({ commit, dispatch }, { title, limit }) {
+    async createCategory ({ commit, dispatch }, { title, limit, fio, phoneNumberC, addressClient, someBuy, summDeal, tkClient, commentWrite }) {
       try {
         const uid = await dispatch('getUid')
-        const category = await firebase.database().ref(`/users/${uid}/categories`).push({ title, limit })
-        return { title, limit, id: category.key }
+        const category = await firebase.database().ref(`/users/${uid}/categories`).push({ title, limit, fio, phoneNumberC, addressClient, someBuy, summDeal, tkClient, commentWrite })
+        return { title, limit, fio, phoneNumberC, addressClient, someBuy, summDeal, tkClient, commentWrite, id: category.key }
       } catch (e) {
         commit('setError', e)
         throw e

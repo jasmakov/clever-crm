@@ -2,16 +2,16 @@
   <nav class="navbar green lighten-1">
     <div class="nav-wrapper">
       <div class="navbar-left">
-        <a href="#" @click.prevent="$emit('side_hide')">
-          <i class="material-icons black-text">dehaze</i>
-        </a>
-        <span class="black-text">{{date | date('datetime')}}</span>
+        <span class="">{{date | date('datetime')}}</span>
       </div>
-
+      <ul class="center hide-on-small-and-down">
+        <li><a href="#">Ваши товары</a></li>
+        <li><a href="#">Склад</a></li>
+      </ul>
       <ul class="right hide-on-small-and-down">
         <li>
           <a
-            class="dropdown-trigger black-text"
+            class="dropdown-trigger"
             href="#"
             data-target="dropdown"
             ref="dropdown"

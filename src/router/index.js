@@ -19,21 +19,27 @@ const routes = [
   },
   {
     path: '/',
-    name: 'home',
+    name: 'category',
     meta: { layout: 'main', auth: true },
-    component: () => import('../views/Home.vue')
+    component: () => import('../views/Category.vue')
+  },
+  {
+    path: '/create',
+    name: 'record',
+    meta: { layout: 'main', auth: true },
+    component: () => import('../views/Record.vue')
+  },
+  {
+    path: '/check',
+    name: 'check',
+    meta: { layout: 'main', auth: true },
+    component: () => import('../views/Check.vue')
   },
   {
     path: '/categories',
     name: 'categories',
     meta: { layout: 'main', auth: true },
     component: () => import('../views/Categories.vue')
-  },
-  {
-    path: '/history',
-    name: 'history',
-    meta: { layout: 'main', auth: true },
-    component: () => import('../views/History.vue')
   },
   {
     path: '/planning',
@@ -48,19 +54,18 @@ const routes = [
     component: () => import('../views/Profile.vue')
   },
   {
-    path: '/record',
-    name: 'record',
-    meta: { layout: 'main', auth: true },
-    component: () => import('../views/Record.vue')
-  },
-  {
     path: '/detail/:id',
     name: 'detail',
     meta: { layout: 'main', auth: true },
     component: () => import('../views/Detail.vue')
+  },
+  {
+    path: '/:catId',
+    name: 'home',
+    meta: { layout: 'main', auth: true },
+    component: () => import('../views/Home.vue')
   }
 ]
-
 const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="page-title">
-      <h3>Категории</h3>
+      <h3><router-link to="/" class="green-text">Главная</router-link> / Категории</h3>
     </div>
     <section>
       <Loader v-if="loading" />
@@ -48,6 +48,13 @@ export default {
       const idx = this.categories.findIndex(c => c.id === category.id)
       this.categories[idx].title = category.title
       this.categories[idx].limit = category.limit
+      this.categories[idx].fio = category.fio
+      this.categories[idx].phoneNumberC = category.phoneNumberC
+      this.categories[idx].addressClient = category.addressClient
+      this.categories[idx].someBuy = category.someBuy
+      this.categories[idx].summDeal = category.summDeal
+      this.categories[idx].tkClient = category.tkClient
+      this.categories[idx].commentWrite = category.commentWrite
       this.updateCount++
     }
   }
