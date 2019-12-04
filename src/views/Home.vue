@@ -2,8 +2,8 @@
 <div>
   <div class="page-title">
     <h3>Записи
-      <a href="#" @click="isHide = !isHide" class="waves-effect waves-light btn-small" v-tooltip="'Аналитика'"><i class="material-icons" style="color: #fff;">insert_chart</i></a>
-      <router-link to="/categories" class="waves-effect waves-light btn-small" v-tooltip="'Добавить категорию'"><i class="material-icons" style="color: #fff;">add</i></router-link>
+<!--      <a href="#" @click="isHide = !isHide" class="waves-effect waves-light btn-small" v-tooltip="'Аналитика'"><i class="material-icons" style="color: #fff;">insert_chart</i></a>-->
+      <router-link to="/categories" class="waves-effect waves-light btn-small" v-tooltip="'Добавить категорию'"><i class="material-icons" style="color: #fff;">+</i></router-link>
       <button
         v-for="minecategor in categoryMine" :key="minecategor.id"
         v-tooltip="minecategor.title"

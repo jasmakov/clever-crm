@@ -17,19 +17,19 @@
             ref="dropdown"
           >
             Профиль
-            <i class="material-icons right">arrow_drop_down</i>
+            <i class="material-icons right" style="font-size: 9pt;">&#9660;</i>
           </a>
 
           <ul id='dropdown' class='dropdown-content'>
             <li>
               <router-link to="/profile" class="black-text">
-                <i class="material-icons">account_circle</i>Настройки
+                Настройки
               </router-link>
             </li>
             <li class="divider" tabindex="-1"></li>
             <li>
               <a href="#" class="black-text" @click.prevent="logout">
-                <i class="material-icons">assignment_return</i>Выйти
+                Выйти
               </a>
             </li>
           </ul>

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="page-title">
-      <h3>Профиль</h3>
+      <h3><router-link to="/" class="green-text">Главная</router-link> / Профиль</h3>
     </div>
 
     <form class="form">
@@ -17,7 +17,6 @@
 
       <button class="btn waves-effect waves-light" type="submit">
         Обновить
-        <i class="material-icons right">send</i>
       </button>
     </form>
   </div>

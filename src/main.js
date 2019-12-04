@@ -12,6 +12,7 @@ import dateFilter from '@/filters/date.filter'
 import currencyFilter from '@/filters/currency.filter'
 import tooltipDerective from '@/directives/tooltip.directive'
 import 'materialize-css/dist/js/materialize.min'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 import firebase from 'firebase/app'
 import 'firebase/auth'
@@ -27,6 +28,7 @@ Vue.filter('currency', currencyFilter)
 Vue.directive('tooltip', tooltipDerective)
 Vue.component('Loader', Loader)
 Vue.component('Paginate', Paginate)
+Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 firebase.initializeApp({
   apiKey: 'AIzaSyAptZlmNERHpjoc3q0eNXFglvmYe0fefkM',

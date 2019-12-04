@@ -50,7 +50,6 @@
           type="submit"
         >
           Зарегистрироваться
-          <i class="material-icons right">send</i>
         </button>
       </div>
 
