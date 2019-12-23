@@ -18,49 +18,13 @@ const routes = [
     component: () => import('../views/Register.vue')
   },
   {
-    path: '/',
+    path: '/:catId',
     name: 'category',
     meta: { layout: 'main', auth: true },
     component: () => import('../views/Category.vue')
   },
   {
-    path: '/create',
-    name: 'record',
-    meta: { layout: 'main', auth: true },
-    component: () => import('../views/Record.vue')
-  },
-  {
-    path: '/check',
-    name: 'check',
-    meta: { layout: 'main', auth: true },
-    component: () => import('../views/Check.vue')
-  },
-  {
-    path: '/categories',
-    name: 'categories',
-    meta: { layout: 'main', auth: true },
-    component: () => import('../views/Categories.vue')
-  },
-  {
-    path: '/planning',
-    name: 'planning',
-    meta: { layout: 'main', auth: true },
-    component: () => import('../views/Planning.vue')
-  },
-  {
-    path: '/profile',
-    name: 'profile',
-    meta: { layout: 'main', auth: true },
-    component: () => import('../views/Profile.vue')
-  },
-  {
-    path: '/detail/:id',
-    name: 'detail',
-    meta: { layout: 'main', auth: true },
-    component: () => import('../views/Detail.vue')
-  },
-  {
-    path: '/:catId',
+    path: '/',
     name: 'home',
     meta: { layout: 'main', auth: true },
     component: () => import('../views/Home.vue')

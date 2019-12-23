@@ -22,6 +22,8 @@ export default {
 </script>
 
 <style lang="scss">
+@import "../node_modules/@ag-grid-community/all-modules/dist/styles/ag-grid.css";
+@import "../node_modules/@ag-grid-community/all-modules/dist/styles/ag-theme-balham.css";
 @import "~materialize-css/dist/css/materialize.min.css";
 @import "assets/style.css";
 </style>

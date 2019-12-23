@@ -1,57 +1,21 @@
 <template>
-  <table>
-    <thead>
-    <router-link to="/create" class="waves-effect waves-light btn-small" v-tooltip="'Создать запись'"><i class="material-icons" style="color: #fff;">add</i></router-link>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col" v-if="catyg.fio != false">ФИО</th>
-      <th scope="col" v-if="catyg.phoneNumberC != false">Телефон</th>
-      <th scope="col" v-if="catyg.addressClient != false">Адрес</th>
-      <th scope="col" v-if="catyg.someBuy != false">Покупка</th>
-      <th scope="col" v-if="catyg.summDeal != false">Сумма сделки</th>
-      <th scope="col" v-if="catyg.tkClient != false">ТК</th>
-      <th scope="col" v-if="catyg.commentWrite != false">Примечание</th>
-    </tr>
-    </thead>
-
-    <draggable tag="tbody">
-    <tr v-for="(record, idx) of records" :key="record.id">
-      <td>{{ idx + 1 }}</td>
-      <td v-if="catyg.fio != false">{{ record.fioadd }}</td>
-      <td v-if="catyg.phoneNumberC != false">{{ record.phoneadd }}</td>
-      <td v-if="catyg.addressClient != false">{{ record.addressadd }}</td>
-      <td v-if="catyg.someBuy != false">{{ record.addbuy }}</td>
-      <td v-if="catyg.summDeal != false">{{ record.amount | currency('RUB') }}</td>
-      <td v-if="catyg.tkClient != false">{{ record.tkadd }}</td>
-      <td v-if="catyg.commentWrite != false">{{ record.commentadd }}</td>
-<!--      <td>{{ record.date | date('datetime') }}</td>-->
-<!--      <td>{{ record.categoryName }}</td>-->
-<!--      <td>-->
-<!--        <span-->
-<!--          :class="[record.typeClass]"-->
-<!--          class="white-text badge"-->
-<!--        >{{ record.typeText }}</span>-->
-<!--      </td>-->
-<!--      <td>-->
-<!--        <button-->
-<!--          v-tooltip="'Посмотреть запись'"-->
-<!--          class="btn-small btn"-->
-<!--          @click="$router.push('/detail/' + record.id)"-->
-<!--        >-->
-<!--          <i class="material-icons">open_in_new</i>-->
-<!--        </button>-->
-<!--      </td>-->
-    </tr>
-    </draggable>
-  </table>
+  <div style="height: 100%">
+    <ag-grid-vue style="height: 400px;" class="ag-theme-balham" id="myGrid"
+                 :gridOptions="gridOptions"
+                 @grid-ready="onGridReady"
+                 :columnDefs="columnDefs"
+                 :defaultColDef="defaultColDef"
+                 :sideBar="sideBar"
+                 :modules="modules"
+                 :rowData="rowData"></ag-grid-vue>
+  </div>
 </template>
 
 <script>
-import draggable from 'vuedraggable'
+import { AgGridVue } from '@ag-grid-community/vue'
+import { AllCommunityModules } from '@ag-grid-community/all-modules'
 export default {
-  name: 'table-column-example',
-  display: 'Table Column',
-  order: 9,
+  name: 'table',
   props: {
     records: {
       required: true,
@@ -63,7 +27,51 @@ export default {
     }
   },
   components: {
-    draggable
+    'ag-grid-vue': AgGridVue
+  },
+  data: function () {
+    return {
+      gridOptions: null,
+      columnDefs: null,
+      defaultColDef: null,
+      sideBar: null,
+      modules: AllCommunityModules,
+      rowData: null
+    }
+  },
+  beforeMount () {
+    this.gridOptions = {
+    }
+    this.columnDefs = [
+      { headerName: 'Model', field: 'model' },
+      { headerName: 'Price', field: 'price' },
+      { headerName: 'Make', field: 'make' }
+    ]
+    this.rowData = [
+      { make: 'Toyota', model: 'Celica', price: 35000 },
+      { make: 'Ford', model: 'Mondeo', price: 32000 },
+      { make: 'Porsche', model: 'Boxter', price: 72000 }
+    ]
+    this.defaultColDef = {
+      editable: true,
+      resizable: true,
+      sortable: true
+    }
+    this.sideBar = 'filters'
+  },
+  mounted () {
+
+  },
+  methods: {
+    onGridReady (params) {
+      setInterval(fillAllCellsWithWidthMeasurement, 50)
+    }
   }
+}
+function fillAllCellsWithWidthMeasurement () {
+  document.querySelectorAll('.ag-cell').forEach(function (cell) {
+    // eslint-disable-next-line no-unused-vars
+    const width = cell.offsetWidth
+  })
 }
 </script>
