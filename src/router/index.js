@@ -26,7 +26,7 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    meta: { layout: 'main', auth: true },
+    meta: { layout: 'empty', auth: true },
     component: () => import('../views/Home.vue')
   }
 ]

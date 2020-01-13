@@ -16,7 +16,7 @@
             data-target="dropdown"
             ref="dropdown"
           >
-            Профиль
+            {{email}}
             <i class="material-icons right" style="font-size: 9pt;">&#9660;</i>
           </a>
 

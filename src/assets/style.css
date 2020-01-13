@@ -187,3 +187,32 @@ table, th, td {
 .add_coloumn button{
     margin-left: 17px;
 }
+.page-title .active{
+    background: #62d0c5;
+    font-weight: 500;
+}
+.Delete_Category{
+    display:none;
+    margin-top: -8px;
+    float: right;
+    margin-right: -13px;
+    color: #fff;
+}
+.Delete_Category:hover{
+    color: #f10000;
+}
+.Delete_Category:focus{
+     color: #f10000;
+ }
+.work_menu:hover .Delete_Category{
+    display:block;
+}
+.home_page{
+    width: 50%;
+}
+.work_item{
+    background: #fff;
+    width: 100%;
+    display: block;
+}
+

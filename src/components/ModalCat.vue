@@ -17,6 +17,9 @@
         <button class="btn waves-effect waves-light" type="submit">
           Добавить
         </button>
+        <div class="btn waves-effect waves-light" style="float: right;" @click="hide_cat">
+          Закрыть
+        </div>
       </form>
     </div>
   </div>
@@ -59,13 +62,13 @@ export default {
       try {
         const category = await this.$store.dispatch('createCategory', {
           title: this.title,
-          fio: this.fio,
-          phoneNumberC: this.phoneNumberC,
-          addressClient: this.addressClient,
-          someBuy: this.someBuy,
-          summDeal: this.summDeal,
-          tkClient: this.tkClient,
-          commentWrite: this.commentWrite
+          fio: 0,
+          phoneNumberC: 1,
+          addressClient: 2,
+          someBuy: 3,
+          summDeal: 4,
+          tkClient: 5,
+          commentWrite: 6
         })
         this.$v.$reset()
         this.$message('Вы создали новую категорию')
@@ -119,7 +122,7 @@ export default {
           categoryId: category.id,
           headerName: 'ТК',
           hide: false,
-          field: 'tk',
+          field: 'tkClient',
           width: 200
         })
         await this.$store.dispatch('createColoumn', {
@@ -130,6 +133,9 @@ export default {
           width: 300
         })
       } catch (e) {}
+    },
+    async hide_cat () {
+      this.$modal.hide('add-cat')
     }
   }
 }

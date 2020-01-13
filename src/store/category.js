@@ -31,6 +31,36 @@ export default {
         throw e
       }
     },
+    async updateIdxColumn ({ commit, dispatch }, { catid, field, colnum }) {
+      try {
+        const uid = await dispatch('getUid')
+        return await firebase.database().ref(`/users/${uid}/categories/`).child(catid).update({ [field]: colnum })
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
+    async deleteCategory ({ commit, dispatch }, { id }) {
+      try {
+        const uid = await dispatch('getUid')
+        const currentRef = await firebase.database().ref(`/users/${uid}/categories/${id}`)
+        currentRef.remove()
+        const deleteRecord = await firebase.database().ref(`/users/${uid}/records/${id}`)
+        deleteRecord.remove()
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
+    async updateTitle ({ commit, dispatch }, { id, title }) {
+      try {
+        const uid = await dispatch('getUid')
+        await firebase.database().ref(`/users/${uid}/categories/`).child(id).update({ title })
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
     async createCategory ({ commit, dispatch }, { title, fio, phoneNumberC, addressClient, someBuy, summDeal, tkClient, commentWrite }) {
       try {
         const uid = await dispatch('getUid')

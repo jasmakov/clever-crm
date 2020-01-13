@@ -8,9 +8,9 @@
           <span>{{column.headerName}}</span>
         </label>
       </p>
-      <button class="btn waves-effect waves-light">
+      <span class="btn waves-effect waves-light" @click="hide">
         Закрыть
-      </button>
+      </span>
     </div>
   </form>
 </template>
@@ -54,6 +54,9 @@ export default {
           this.$emit('updated', categoryData)
         } catch (e) {}
       }
+    },
+    async hide () {
+      this.$modal.hide('add-col')
     }
   },
   mounted () {

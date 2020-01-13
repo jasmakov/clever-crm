@@ -21,11 +21,39 @@ export default {
         throw e
       }
     },
+    async updateColSize ({ commit, dispatch }, { catid, colid, width }) {
+      try {
+        const uid = await dispatch('getUid')
+        await firebase.database().ref(`/users/${uid}/records/${catid}/columnDefs/`).child(colid).update({ width })
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
     async createEmptyRow ({ commit, dispatch }, { categoryId, fio, phoneNumberC, addressClient, someBuy, summDeal, tkClient, commentWrite }) {
       try {
         const uid = await dispatch('getUid')
         await firebase.database().ref(`/users/${uid}/records/${categoryId}/rowDefs`).push({ fio, phoneNumberC, addressClient, someBuy, summDeal, tkClient, commentWrite })
         return { fio, phoneNumberC, addressClient, someBuy, summDeal, tkClient, commentWrite }
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
+    async updateRecord ({ commit, dispatch }, { rowid, catid, fio, phoneNumberC, addressClient, someBuy, summDeal, tkClient, commentWrite }) {
+      try {
+        const uid = await dispatch('getUid')
+        await firebase.database().ref(`/users/${uid}/records/${catid}/rowDefs/`).child(rowid).update({ fio, phoneNumberC, addressClient, someBuy, summDeal, tkClient, commentWrite })
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
+    async deleteRecord ({ commit, dispatch }, { id, rowid }) {
+      try {
+        const uid = await dispatch('getUid')
+        const currentRef = await firebase.database().ref(`/users/${uid}/records/${id}/rowDefs/${rowid}`)
+        currentRef.remove()
       } catch (e) {
         commit('setError', e)
         throw e

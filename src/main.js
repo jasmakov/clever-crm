@@ -13,6 +13,7 @@ import dateFilter from '@/filters/date.filter'
 import currencyFilter from '@/filters/currency.filter'
 import tooltipDerective from '@/directives/tooltip.directive'
 import 'materialize-css/dist/js/materialize.min'
+import VueSimpleAlert from 'vue-simple-alert'
 
 import firebase from 'firebase/app'
 import 'firebase/auth'
@@ -24,6 +25,7 @@ Vue.use(messagePlugin)
 Vue.use(Vuelidate)
 Vue.use(VueMeta)
 Vue.use(VModal)
+Vue.use(VueSimpleAlert)
 Vue.filter('date', dateFilter)
 Vue.filter('currency', currencyFilter)
 Vue.directive('tooltip', tooltipDerective)
