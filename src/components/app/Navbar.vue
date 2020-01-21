@@ -5,7 +5,6 @@
         <span class="">{{date | date('datetime')}}</span>
       </div>
       <ul class="center hide-on-small-and-down">
-        <li><a href="#">Ваши товары</a></li>
         <li><a href="#">Склад</a></li>
       </ul>
       <ul class="right hide-on-small-and-down">
@@ -21,11 +20,6 @@
           </a>
 
           <ul id='dropdown' class='dropdown-content'>
-            <li>
-              <router-link to="/profile" class="black-text">
-                Настройки
-              </router-link>
-            </li>
             <li class="divider" tabindex="-1"></li>
             <li>
               <a href="#" class="black-text" @click.prevent="logout">

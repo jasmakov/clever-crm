@@ -1,5 +1,6 @@
 <template>
-<div>
+<Loader v-if="loading" />
+<div v-else>
   <div class="page-title">
     <h3 :key="columnDefs.length + updateCount">
         <ul>
@@ -15,7 +16,8 @@
               </a>
               <span @click="deleteCategory(minecategor.id, minecategor.title)" class="Delete_Category">X</span>
             </router-link>
-            <li class="btn-small btn" @click.prevent="show_cat"><a href="#" class="waves-effect waves-light" v-tooltip="'Добавить категорию'"><i class="material-icons" style="color: #fff;">+</i></a></li>
+            <li class="btn-small btn" @click.prevent="show_cat"><a href="#" class="waves-effect waves-light" v-tooltip="'Добавить категорию'" style="padding: 6px;"><eva-icon name="plus" animation="pulse" fill="white"></eva-icon></a></li>
+            <li class="btn-small btn" @click.prevent="show_adduser"><a href="#" class="waves-effect waves-light" v-tooltip="'Редактор прав'" style="padding: 6px;"><eva-icon name="person-add" animation="pulse" fill="white"></eva-icon></a></li>
           </draggable>
         </ul>
     </h3>
@@ -23,24 +25,30 @@
   <div class="history-chart" :class="{ hide: !isHide }">
     <canvas ref="canvas"></canvas>
   </div>
-  <Loader v-if="loading" />
 
-  <section v-else>
+  <section>
     <modal  name="add-col" transition="nice-modal-fade"
             :min-width="200"
             :min-height="200"
-            width="15%"
+            width="20%"
             height="auto">
       <ModalCol :columnDefsChoice="columnDefsChoice" @updated="updateCol"/>
     </modal>
     <modal  name="add-cat" transition="nice-modal-fade"
             :min-width="200"
             :min-height="200"
-            width="15%"
+            width="20%"
             height="auto">
       <ModalCat @created="addNewCategory" />
     </modal>
-    <a href="#" @click.prevent="show" class="waves-effect waves-light btn-small" v-tooltip="'Редактировать столбцы'">+</a>
+    <modal  name="add-user" transition="nice-modal-fade"
+            :min-width="200"
+            :min-height="200"
+            width="30%"
+            height="auto">
+      <ModalAddUser :invatedUsers="invatedUsers" :categories="categories" @invated="addInvUser"/>
+    </modal>
+    <a href="#" @click.prevent="show" class="waves-effect waves-light btn-small" v-tooltip="'Редактировать столбцы'" style="padding: 6px;"><eva-icon name="browser" animation="pulse" fill="white"></eva-icon></a>
     <div style="height: 100%" :key="columnDefs.length + updateCount">
       <ag-grid-vue style="height: 600px;" class="ag-theme-balham" id="myGrid"
                    :gridOptions="gridOptions"
@@ -67,6 +75,7 @@ import { AgGridVue } from '@ag-grid-community/vue'
 import { AllCommunityModules } from '@ag-grid-community/all-modules'
 import ModalCat from '../components/ModalCat'
 import ModalCol from '../components/ModalCol'
+import ModalAddUser from '../components/ModalAddUser'
 import draggable from 'vuedraggable'
 
 export default {
@@ -83,6 +92,8 @@ export default {
     gridOptions: null,
     columnDefs: [],
     columnDefsChoice: [],
+    invatedUsers: [],
+    invatedAllUsers: [],
     defaultColDef: null,
     sideBar: null,
     modules: AllCommunityModules,
@@ -106,9 +117,22 @@ export default {
     this.records = await this.$store.dispatch('fetchRecords', id)
     this.catyg = await this.$store.dispatch('fetchCategoryById', id)
     this.categories = await this.$store.dispatch('fetchCategories')
+    this.invatedUsers = await this.$store.dispatch('fetchInvUser')
     this.loading = false
   },
   methods: {
+    async onGridReady (params) {
+      const id = this.$route.params.catId
+      const catyg = await this.$store.dispatch('fetchCategoryById', id)
+      this.columnDefsChoice = await this.$store.dispatch('fetchColumnForChoice', id)
+      await params.columnApi.moveColumn('fio', catyg.fio)
+      await params.columnApi.moveColumn('phoneNumberC', catyg.phoneNumberC)
+      await params.columnApi.moveColumn('addressClient', catyg.addressClient)
+      await params.columnApi.moveColumn('someBuy', catyg.someBuy)
+      await params.columnApi.moveColumn('summDeal', catyg.summDeal)
+      await params.columnApi.moveColumn('tkClient', catyg.tkClient)
+      await params.columnApi.moveColumn('commentWrite', catyg.commentWrite)
+    },
     onEnd (draggedContext) {
       console.log(draggedContext)
     },
@@ -140,6 +164,9 @@ export default {
       this.categories.push(category)
       this.$modal.hide('add-cat')
     },
+    addInvUser (invuser) {
+      this.invatedUsers.push(invuser)
+    },
     updateCol (column) {
       const idx = this.columnDefsChoice.findIndex(c => c.id === column.id)
       this.columnDefsChoice[idx].hide = column.hide
@@ -160,6 +187,9 @@ export default {
     },
     async show_cat () {
       this.$modal.show('add-cat')
+    },
+    async show_adduser () {
+      this.$modal.show('add-user')
     },
     async numberParser (params) {
       const recordData = {
@@ -211,42 +241,31 @@ export default {
         this.$message('Размер колонок успешно изменен')
       }
     },
-    async onGridReady (params) {
-      const id = this.$route.params.catId
-      const catyg = await this.$store.dispatch('fetchCategoryById', id)
-      this.columnDefsChoice = await this.$store.dispatch('fetchColumnForChoice', id)
-      await params.columnApi.moveColumn('fio', catyg.fio)
-      await params.columnApi.moveColumn('phoneNumberC', catyg.phoneNumberC)
-      await params.columnApi.moveColumn('addressClient', catyg.addressClient)
-      await params.columnApi.moveColumn('someBuy', catyg.someBuy)
-      await params.columnApi.moveColumn('summDeal', catyg.summDeal)
-      await params.columnApi.moveColumn('tkClient', catyg.tkClient)
-      await params.columnApi.moveColumn('commentWrite', catyg.commentWrite)
-    },
-    async changeDrag (params) {
+    changeDrag (params) {
       const cols = params.columnApi.getAllDisplayedVirtualColumns()
-      if (cols[0].colDef.field) {
+      console.log(cols[0].colDef.field)
+      if (cols[0].colDef.field !== '') {
         const field = cols[0].colDef.field
         const updateColIdx = {
-          catid: await this.$route.params.catId,
+          catid: this.$route.params.catId,
           field: field,
           colnum: 0
         }
         this.$store.dispatch('updateIdxColumn', updateColIdx)
       }
-      if (cols[1].colDef.field) {
+      if (cols[1].colDef.field !== '') {
         const field = cols[1].colDef.field
         const updateColIdx = {
-          catid: await this.$route.params.catId,
+          catid: this.$route.params.catId,
           field: field,
           colnum: 1
         }
         this.$store.dispatch('updateIdxColumn', updateColIdx)
       }
-      if (cols[2].colDef.field) {
+      if (cols[2].colDef.field !== '') {
         const field = cols[2].colDef.field
         const updateColIdx = {
-          catid: await this.$route.params.catId,
+          catid: this.$route.params.catId,
           field: field,
           colnum: 2
         }
@@ -255,34 +274,34 @@ export default {
       if (cols[3].colDef.field) {
         const field = cols[3].colDef.field
         const updateColIdx = {
-          catid: await this.$route.params.catId,
+          catid: this.$route.params.catId,
           field: field,
           colnum: 3
         }
         this.$store.dispatch('updateIdxColumn', updateColIdx)
       }
-      if (cols[4].colDef.field) {
+      if (cols[4].colDef.field !== '') {
         const field = cols[4].colDef.field
         const updateColIdx = {
-          catid: await this.$route.params.catId,
+          catid: this.$route.params.catId,
           field: field,
           colnum: 4
         }
         this.$store.dispatch('updateIdxColumn', updateColIdx)
       }
-      if (cols[5].colDef.field) {
+      if (cols[5].colDef.field !== '') {
         const field = cols[5].colDef.field
         const updateColIdx = {
-          catid: await this.$route.params.catId,
+          catid: this.$route.params.catId,
           field: field,
           colnum: 5
         }
         this.$store.dispatch('updateIdxColumn', updateColIdx)
       }
-      if (cols[6].colDef.field) {
+      if (cols[6].colDef.field !== '') {
         const field = cols[6].colDef.field
         const updateColIdx = {
-          catid: await this.$route.params.catId,
+          catid: this.$route.params.catId,
           field: field,
           colnum: 6
         }
@@ -294,6 +313,7 @@ export default {
   components: {
     ModalCat,
     ModalCol,
+    ModalAddUser,
     'ag-grid-vue': AgGridVue,
     draggable
   }

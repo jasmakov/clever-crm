@@ -215,4 +215,28 @@ table, th, td {
     width: 100%;
     display: block;
 }
+.one-invuser{
+    padding: 5px;
+}
+.one-invuser h4{
+    text-align: center;
+    font-size: 18pt;
+}
+.one-invuser .row{
+    margin-bottom: 5px;
+    margin-top: 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.24);
+}
+.one-invuser a{
+    float: right;
+}
+.change_rights h4{
+    text-align: center;
+    font-size: 18pt;
+}
+.change_rights .row{
+    margin-bottom: 5px;
+    margin-top: 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.24);
+}
 
