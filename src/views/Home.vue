@@ -31,15 +31,17 @@ export default {
     }
   },
   async mounted () {
-    const categories = await this.$store.dispatch('fetchCategories')
+    const areaId = this.$route.params.areaId
+    const categories = await this.$store.dispatch('fetchCategories', areaId)
     if (categories.length) {
-      this.$router.push('/' + categories[0].id)
+      this.$router.push('/' + areaId + '/' + categories[0].id)
     }
   },
   methods: {
     async addNewCategory (category) {
+      const areaId = this.$route.params.areaId
       await this.$modal.hide('add-cat')
-      await this.$router.push('/' + category.id)
+      await this.$router.push('/' + areaId + '/' + category.id)
     },
     async show_cat () {
       this.$modal.show('add-cat')

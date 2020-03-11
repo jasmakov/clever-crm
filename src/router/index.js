@@ -18,16 +18,52 @@ const routes = [
     component: () => import('../views/Register.vue')
   },
   {
-    path: '/:catId',
+    path: '/:areaId/storage/:strId',
+    name: 'instorage',
+    meta: { layout: 'main', auth: true },
+    component: () => import('../views/Instorage.vue')
+  },
+  {
+    path: '/enter/:areaId/:invId',
+    name: 'enter',
+    meta: { layout: 'main', auth: true },
+    component: () => import('../views/Enter.vue')
+  },
+  {
+    path: '/:areaId/storage',
+    name: 'storage',
+    meta: { layout: 'main', auth: true },
+    component: () => import('../views/Storage.vue')
+  },
+  {
+    path: '/:areaId/product/:proId',
+    name: 'product',
+    meta: { layout: 'main', auth: true },
+    component: () => import('../views/Inproduct.vue')
+  },
+  {
+    path: '/:areaId/products',
+    name: 'products',
+    meta: { layout: 'main', auth: true },
+    component: () => import('../views/Products.vue')
+  },
+  {
+    path: '/:areaId/:catId',
     name: 'category',
     meta: { layout: 'main', auth: true },
     component: () => import('../views/Category.vue')
   },
   {
-    path: '/',
+    path: '/:areaId',
     name: 'home',
-    meta: { layout: 'empty', auth: true },
+    meta: { layout: 'main', auth: true },
     component: () => import('../views/Home.vue')
+  },
+  {
+    path: '/',
+    name: 'choose',
+    meta: { layout: 'empty', auth: true },
+    component: () => import('../views/Choose.vue')
   }
 ]
 const router = new VueRouter({

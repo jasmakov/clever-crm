@@ -5,7 +5,8 @@
         <span class="">{{date | date('datetime')}}</span>
       </div>
       <ul class="center hide-on-small-and-down">
-        <li><a href="#">Склад</a></li>
+        <li><router-link :to="'/' + $route.params.areaId + '/storage'">Склад</router-link></li>
+        <li><router-link :to="'/' + $route.params.areaId">Рабочая область</router-link></li>
       </ul>
       <ul class="right hide-on-small-and-down">
         <li>

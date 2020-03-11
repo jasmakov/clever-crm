@@ -1,32 +1,28 @@
 <template>
 <Loader v-if="loading" />
 <div v-else>
-  <div class="page-title">
-    <h3 :key="columnDefs.length + updateCount">
-        <ul>
-          <draggable draggable=".work_menu" @end="onEnd">
-            <router-link
-              v-for="minecategor in categories"
-              :key="minecategor.id" tag="li"
-              class="btn-small btn work_menu"
-              active-class="active"
-              :to="'/'+ minecategor.id"
-            >
-              <a href="#" class="waves-effect waves-light" style="color: #fff;" @click="Changepage(minecategor.id)" @dblclick="changeTitle(minecategor.id)" v-tooltip="'Дважды кликните чтобы изменить название'">{{minecategor.title}}
-              </a>
-              <span @click="deleteCategory(minecategor.id, minecategor.title)" class="Delete_Category">X</span>
-            </router-link>
-            <li class="btn-small btn" @click.prevent="show_cat"><a href="#" class="waves-effect waves-light" v-tooltip="'Добавить категорию'" style="padding: 6px;"><eva-icon name="plus" animation="pulse" fill="white"></eva-icon></a></li>
-            <li class="btn-small btn" @click.prevent="show_adduser"><a href="#" class="waves-effect waves-light" v-tooltip="'Редактор прав'" style="padding: 6px;"><eva-icon name="person-add" animation="pulse" fill="white"></eva-icon></a></li>
-          </draggable>
-        </ul>
-    </h3>
-  </div>
-  <div class="history-chart" :class="{ hide: !isHide }">
-    <canvas ref="canvas"></canvas>
-  </div>
-
+  <Catbar :categories="categories" :invited="invited" :myinviters="myinviters" :rights="rights"/>
   <section>
+    <a href="#" @click.prevent="show" class="waves-effect waves-light btn-small" v-tooltip="'Редактировать столбцы'" style="padding: 6px;"><eva-icon name="browser" animation="pulse" fill="white"></eva-icon></a>
+    <div style="height: 100%" :key="columnDefsChoice.length + updateCount">
+      <ag-grid-vue style="height: 600px;" class="ag-theme-balham" id="myGrid"
+                   :gridOptions="gridOptions"
+                   @grid-ready="onGridReady"
+                   :columnDefs="columnDefsChoice"
+                   :defaultColDef="defaultColDef"
+                   :rowHeight="rowHeight"
+                   :modules="modules"
+                   :key="records.length + updateCount"
+                   :suppressDragLeaveHidesColumns="true"
+                   :stopEditingWhenGridLosesFocus="true"
+                   :rowData="newrecord"
+                   :rowClassRules="rowClassRules"
+                   @cellValueChanged="numberParser"
+                   @cellDoubleClicked="editProduct"
+                   @columnResized="changeSize"
+                   @dragStopped="changeDrag">
+      </ag-grid-vue>
+    </div>
     <modal  name="add-col" transition="nice-modal-fade"
             :min-width="200"
             :min-height="200"
@@ -34,38 +30,20 @@
             height="auto">
       <ModalCol :columnDefsChoice="columnDefsChoice" @updated="updateCol"/>
     </modal>
-    <modal  name="add-cat" transition="nice-modal-fade"
+    <modal  name="edit-module" transition="nice-modal-fade"
             :min-width="200"
             :min-height="200"
-            width="20%"
+            width="80%"
             height="auto">
-      <ModalCat @created="addNewCategory" />
+      <ModalProduct :productObj="productObj" :rowIdforProd="rowIdforProd" @moduled="updateModule"/>
     </modal>
-    <modal  name="add-user" transition="nice-modal-fade"
+    <modal  name="edit-status" transition="nice-modal-fade"
             :min-width="200"
             :min-height="200"
-            width="30%"
+            width="60%"
             height="auto">
-      <ModalAddUser :invatedUsers="invatedUsers" :categories="categories" @invated="addInvUser"/>
+      <ModalStatus :rowIdforProd="rowIdforProd" @statused="updateStatus"/>
     </modal>
-    <a href="#" @click.prevent="show" class="waves-effect waves-light btn-small" v-tooltip="'Редактировать столбцы'" style="padding: 6px;"><eva-icon name="browser" animation="pulse" fill="white"></eva-icon></a>
-    <div style="height: 100%" :key="columnDefs.length + updateCount">
-      <ag-grid-vue style="height: 600px;" class="ag-theme-balham" id="myGrid"
-                   :gridOptions="gridOptions"
-                   :columnDefs="columnDefsChoice"
-                   :defaultColDef="defaultColDef"
-                   :sideBar="sideBar"
-                   :modules="modules"
-                   :key="records.length + updateCount"
-                   :suppressDragLeaveHidesColumns="true"
-                   :stopEditingWhenGridLosesFocus="true"
-                   :rowData="records"
-                   @grid-ready="onGridReady"
-                   @cell-value-changed="numberParser"
-                   @columnResized="changeSize"
-                   @dragStopped="changeDrag">
-      </ag-grid-vue>
-    </div>
   </section>
 </div>
 </template>
@@ -73,10 +51,10 @@
 <script>
 import { AgGridVue } from '@ag-grid-community/vue'
 import { AllCommunityModules } from '@ag-grid-community/all-modules'
-import ModalCat from '../components/ModalCat'
 import ModalCol from '../components/ModalCol'
-import ModalAddUser from '../components/ModalAddUser'
-import draggable from 'vuedraggable'
+import Catbar from '../components/app/Catbar'
+import ModalProduct from '../components/ModalProduct'
+import ModalStatus from '../components/ModalStatus'
 
 export default {
   name: 'category',
@@ -84,238 +62,298 @@ export default {
     title: 'CLEVERME CRM'
   },
   data: () => ({
-    loading: true,
+    gridOptions: null,
+    gridApi: null,
+    rowHeight: null,
+    defaultColDef: null,
+    rowData: null,
+    columnApi: null,
+    rowClassRules: null,
+    columnDefsChoice: [],
+    productCategory: [],
+    allProduct: [],
+    productObj: [],
+    myinviters: [],
+    invited: [],
     records: [],
     categories: [],
+    newrecord: [],
+    rights: [],
+    loading: true,
+    rowIdforProd: '',
     isHide: false,
-    catyg: [],
-    gridOptions: null,
-    columnDefs: [],
-    columnDefsChoice: [],
-    invatedUsers: [],
-    invatedAllUsers: [],
-    defaultColDef: null,
-    sideBar: null,
     modules: AllCommunityModules,
-    rowData: null,
     updateCount: 0
   }),
-  beforeMount () {
-    this.gridOptions = {
-
-    }
+  async beforeMount () {
+    this.gridOptions = {}
     this.defaultColDef = {
       editable: true,
       resizable: true,
       sortable: true
     }
-    this.sideBar = 'filters'
+    this.rowHeight = 275
   },
   async mounted () {
     const id = this.$route.params.catId
-    this.columnDefs = await this.$store.dispatch('fetchColumn', id)
-    this.records = await this.$store.dispatch('fetchRecords', id)
-    this.catyg = await this.$store.dispatch('fetchCategoryById', id)
-    this.categories = await this.$store.dispatch('fetchCategories')
-    this.invatedUsers = await this.$store.dispatch('fetchInvUser')
+    const areaId = this.$route.params.areaId
+    this.rights = await this.$store.dispatch('fetchRights', { areaId })
+    if (this.rights === 'Admin' || this.rights[0].rights[id].readCaty === 'mydvg1cool') {
+      this.gridApi = this.gridOptions.api
+      this.records = await this.$store.dispatch('fetchRecords', { id, areaId })
+      let idx = 1
+      for (const reco of this.records) {
+        const allrecord = {
+          numIdx: idx++,
+          addressClient: reco.addressClient,
+          commentWrite: reco.commentWrite,
+          fio: reco.fio,
+          muchMod: reco.muchMod,
+          nameMod: reco.nameMod,
+          phoneNumberC: reco.phoneNumberC,
+          priceMod: reco.priceMod,
+          tkClient: reco.tkClient,
+          status: reco.status === '0' ? 'Выбрать статус' : reco.status === '1' ? 'В работе' : reco.status === '2' ? 'Думают' : reco.status === '3' ? 'Собран' : reco.status === '4' ? 'Выставлен счет' : reco.status === '5' ? 'Оплачен' : reco.status === '6' ? 'Отгружен' : reco.status === '7' ? 'Возврат' : reco.status === '8' ? 'Отменен' : '',
+          id: reco.id
+        }
+        this.newrecord.push(allrecord)
+      }
+      this.rowClassRules = {
+        'status_work': params => {
+          const numSickDays = params.data.status
+          return numSickDays === 'В работе'
+        },
+        'status_not': 'data.status === "Выбрать статус"',
+        'status_think': 'data.status === "Думают"',
+        'status_create': 'data.status === "Собран"',
+        'status_payday': 'data.status === "Выставлен счет"',
+        'status_alrpay': 'data.status === "Оплачен"',
+        'status_mailed': 'data.status === "Отгружен"',
+        'status_back': 'data.status === "Возврат"',
+        'status_cancel': 'data.status === "Отменен"'
+      }
+      this.columnDefsChoice = await this.$store.dispatch('fetchColumnForChoice', { id, areaId })
+    } else {
+      this.$alert('У вас нету доступа к этой категории')
+    }
+    this.invited = await this.$store.dispatch('fetchInvited', areaId)
+    this.categories = await this.$store.dispatch('fetchCategories', areaId)
+    this.productCategory = await this.$store.dispatch('fetchProductsCategory', areaId)
+    this.myinviters = await this.$store.dispatch('fetchInviterforInvite', areaId)
     this.loading = false
+  },
+  watch: {
+    async $route (to) {
+      this.loading = true
+      const id = to.params.catId
+      const areaId = this.$route.params.areaId
+      this.rights = await this.$store.dispatch('fetchRights', { areaId })
+      if (this.rights === 'Admin' || this.rights[0].rights[id].readCaty === 'mydvg1cool') {
+        this.newrecord = []
+        this.records = await this.$store.dispatch('fetchRecords', { id, areaId })
+        let idx = 1
+        for (const reco of this.records) {
+          const allrecord = {
+            numIdx: idx++,
+            addressClient: reco.addressClient,
+            commentWrite: reco.commentWrite,
+            fio: reco.fio,
+            muchMod: reco.muchMod,
+            nameMod: reco.nameMod,
+            phoneNumberC: reco.phoneNumberC,
+            priceMod: reco.priceMod,
+            tkClient: reco.tkClient,
+            status: reco.status === '0' ? 'Выбрать статус' : '',
+            id: reco.id
+          }
+          this.newrecord.push(allrecord)
+        }
+        this.columnDefsChoice = await this.$store.dispatch('fetchColumnForChoice', { id, areaId })
+      } else {
+        this.$alert('У вас нету доступа к этой категории')
+      }
+      this.loading = false
+    }
   },
   methods: {
     async onGridReady (params) {
       const id = this.$route.params.catId
-      const catyg = await this.$store.dispatch('fetchCategoryById', id)
-      this.columnDefsChoice = await this.$store.dispatch('fetchColumnForChoice', id)
+      const areaId = this.$route.params.areaId
+      const catyg = await this.$store.dispatch('fetchCategoryById', { id, areaId })
       await params.columnApi.moveColumn('fio', catyg.fio)
       await params.columnApi.moveColumn('phoneNumberC', catyg.phoneNumberC)
+      await params.columnApi.moveColumn('moduleOrder', catyg.moduleOrder)
       await params.columnApi.moveColumn('addressClient', catyg.addressClient)
-      await params.columnApi.moveColumn('someBuy', catyg.someBuy)
-      await params.columnApi.moveColumn('summDeal', catyg.summDeal)
       await params.columnApi.moveColumn('tkClient', catyg.tkClient)
       await params.columnApi.moveColumn('commentWrite', catyg.commentWrite)
     },
-    onEnd (draggedContext) {
-      console.log(draggedContext)
-    },
-    changeTitle (id) {
-      this.$prompt('Введите новое название').then((text) => {
-        this.$store.dispatch('updateTitle', { id, title: text })
-        const idx = this.categories.findIndex(c => c.id === id)
-        this.categories[idx].title = text
-        this.updateCount++
-        this.$fire({
-          title: 'Новое название "' + text + '" - сохранено!',
-          type: 'success',
-          timer: 3000
-        })
-      })
-    },
-    deleteCategory (id, title) {
-      this.$confirm('Вы уверены что хотите удалить ' + title + '?').then(() => {
-        this.$store.dispatch('deleteCategory', { id })
-        this.categories.pop(id)
-        this.$fire({
-          title: title + ' - удален',
-          type: 'success',
-          timer: 3000
-        })
-      })
-    },
-    addNewCategory (category) {
-      this.categories.push(category)
-      this.$modal.hide('add-cat')
-    },
-    addInvUser (invuser) {
-      this.invatedUsers.push(invuser)
-    },
     updateCol (column) {
-      const idx = this.columnDefsChoice.findIndex(c => c.id === column.id)
-      this.columnDefsChoice[idx].hide = column.hide
+      const idx = this.columnDefsChoice.findIndex(c => c.groupId === column.id)
+      if (column.catData === 'moduleOrder') {
+        this.columnDefsChoice[idx].children[0].hide = column.hide
+        this.columnDefsChoice[idx].children[1].hide = column.hide
+        this.columnDefsChoice[idx].children[2].hide = column.hide
+      } else {
+        this.columnDefsChoice[idx].children[0].hide = column.hide
+      }
       this.updateCount++
     },
-    async Changepage (id) {
-      // this.columnDefsChoice[1] = await this.$store.dispatch('fetchColumnForChoice', id)
-      // this.records[1] = await this.$store.dispatch('fetchRecords', id)
-      this.$router.push('/' + id + '/')
-      this.records = await this.$store.dispatch('fetchRecords', id)
-      this.columnDefsChoice = await this.$store.dispatch('fetchColumnForChoice', id)
-      this.catyg = await this.$store.dispatch('fetchCategoryById', id)
-      this.categories = await this.$store.dispatch('fetchCategories')
+    updateModule (module) {
+      const idx = this.newrecord.findIndex(c => c.id === module.rowid)
+      this.newrecord[idx].nameMod = module.nameMod
+      this.newrecord[idx].muchMod = module.muchMod
+      this.newrecord[idx].priceMod = module.priceMod
+      this.updateCount++
+    },
+    updateStatus (module) {
+      const idx = this.newrecord.findIndex(c => c.id === module.rowid)
+      this.newrecord[idx].status = module.status === '0' ? 'Выбрать статус' : module.status === '1' ? 'В работе' : module.status === '2' ? 'Думают' : module.status === '3' ? 'Собран' : module.status === '4' ? 'Выставлен счет' : module.status === '5' ? 'Оплачен' : module.status === '6' ? 'Отгружен' : module.status === '7' ? 'Возврат' : module.status === '8' ? 'Отменен' : ''
       this.updateCount++
     },
     async show () {
-      this.$modal.show('add-col')
+      const id = this.$route.params.catId
+      const areaId = this.$route.params.areaId
+      const rights = await this.$store.dispatch('fetchRights', { areaId })
+      if (rights === 'Admin' || rights[0].rights[id].writeCaty === 'mydvg1cool') {
+        this.$modal.show('add-col')
+      } else {
+        this.$alert('У вас нету доступа к этой функции')
+      }
     },
-    async show_cat () {
-      this.$modal.show('add-cat')
-    },
-    async show_adduser () {
-      this.$modal.show('add-user')
+    async editProduct (params) {
+      const id = this.$route.params.catId
+      const areaId = this.$route.params.areaId
+      const rights = await this.$store.dispatch('fetchRights', { areaId })
+      if (rights === 'Admin' || rights[0].rights[id].writeCaty === 'mydvg1cool') {
+        this.productObj = []
+        this.rowIdforProd = params.data.id
+        if (params.colDef.field === 'nameMod' || params.colDef.field === 'muchMod' || params.colDef.field === 'priceMod') {
+          this.$modal.show('edit-module')
+          for (const prodForAdd of this.productCategory) {
+            const proCatId = prodForAdd.id
+            const areaId = this.$route.params.areaId
+            this.allProduct = await this.$store.dispatch('fetchProductsCategoryTableById', { proCatId, areaId })
+            console.log(this.allProduct)
+            for (const prody of this.allProduct) {
+              this.productObj.push(prody)
+            }
+          }
+        }
+        if (params.colDef.field === 'status') {
+          this.$modal.show('edit-status')
+        }
+      } else {
+        this.$alert('У вас нету доступа к этой функции')
+      }
     },
     async numberParser (params) {
-      const recordData = {
-        rowid: params.data.id,
-        catid: await this.$route.params.catId,
-        fio: params.colDef.field === 'fio' ? params.newValue : params.data.fio,
-        phoneNumberC: params.colDef.field === 'phoneNumberC' ? params.newValue : params.data.phoneNumberC,
-        addressClient: params.colDef.field === 'addressClient' ? params.newValue : params.data.addressClient,
-        someBuy: params.colDef.field === 'someBuy' ? params.newValue : params.data.someBuy,
-        summDeal: params.colDef.field === 'summDeal' ? params.newValue : params.data.summDeal,
-        tkClient: params.colDef.field === 'tkClient' ? params.newValue : params.data.tkClient,
-        commentWrite: params.colDef.field === 'commentWrite' ? params.newValue : params.data.commentWrite
-      }
-      this.$store.dispatch('updateRecord', recordData)
-      this.$message('Сохранено')
-      const id = await this.$route.params.catId
-      const records = await this.$store.dispatch('fetchRecords', id)
-      const lastRecord = records[records.length - 1]
-      if (lastRecord.fio !== '' || lastRecord.phoneNumberC !== '' || lastRecord.addressClient !== '' || lastRecord.someBuy !== '' || lastRecord.summDeal !== '' || lastRecord.tkClient !== '' || lastRecord.commentWrite !== '') {
-        const emptyRowData = {
-          categoryId: id,
-          fio: '',
-          phoneNumberC: '',
-          addressClient: '',
-          someBuy: '',
-          summDeal: '',
-          tkClient: '',
-          commentWrite: ''
+      const id = this.$route.params.catId
+      const areaId = this.$route.params.areaId
+      const rights = await this.$store.dispatch('fetchRights', { areaId })
+      if (rights === 'Admin' || rights[0].rights[id].writeCaty === 'mydvg1cool') {
+        const recordData = {
+          rowid: params.data.id,
+          catid: await this.$route.params.catId,
+          areaId: await this.$route.params.areaId,
+          fio: params.colDef.field === 'fio' ? params.newValue : params.data.fio,
+          phoneNumberC: params.colDef.field === 'phoneNumberC' ? params.newValue : params.data.phoneNumberC,
+          addressClient: params.colDef.field === 'addressClient' ? params.newValue : params.data.addressClient,
+          tkClient: params.colDef.field === 'tkClient' ? params.newValue : params.data.tkClient,
+          commentWrite: params.colDef.field === 'commentWrite' ? params.newValue : params.data.commentWrite
         }
-        await this.$store.dispatch('createEmptyRow', emptyRowData)
-        const newrecord = await this.$store.dispatch('fetchRecords', id)
-        const emptyValue = newrecord[newrecord.length - 1]
-        this.records.push(emptyValue)
-      } if (params.data.fio === '' & params.data.phoneNumberC === '' & params.data.addressClient === '' & params.data.someBuy === '' & params.data.summDeal === '' & params.data.tkClient === '' & params.data.commentWrite === '' & lastRecord.id !== params.data.id) {
-        const rowid = params.data.id
-        this.$store.dispatch('deleteRecord', { id, rowid })
+        this.$store.dispatch('updateRecord', recordData)
+        const id = await this.$route.params.catId
+        const areaId = this.$route.params.areaId
+        const records = await this.$store.dispatch('fetchRecords', { id, areaId })
+        const lastRecord = records[records.length - 1]
+        if (lastRecord.fio !== '' || lastRecord.phoneNumberC !== '' || lastRecord.nameMod !== '' || lastRecord.muchMod !== '' || lastRecord.priceMod !== '' || lastRecord.addressClient !== '' || lastRecord.tkClient !== '' || lastRecord.commentWrite !== '') {
+          const emptyRowData = {
+            categoryId: id,
+            areaId: areaId,
+            fio: '',
+            phoneNumberC: '',
+            addressClient: '',
+            tkClient: '',
+            commentWrite: '',
+            nameMod: '',
+            muchMod: '',
+            priceMod: '',
+            status: '0'
+          }
+          const takerecord = await this.$store.dispatch('createEmptyRow', emptyRowData)
+          takerecord.status = takerecord.status === '0' ? 'Выбрать статус' : ''
+          const Idx = {
+            numIdx: records.length + 1
+          }
+          const emptyValue = { ...takerecord, ...Idx }
+          this.newrecord.push(emptyValue)
+        }
+        if (params.data.fio === '' & params.data.phoneNumberC === '' & params.data.addressClient === '' & params.data.tkClient === '' & params.data.commentWrite === '' & params.data.nameMod === '' & params.data.muchMod === '' & params.data.priceMod === '' & lastRecord.id !== params.data.id) {
+          const rowid = params.data.id
+          this.$store.dispatch('deleteRecord', { id, areaId, rowid })
+        } else {
+          console.log('Ничего не происходит')
+        }
       } else {
-        console.log('Ничего не происходит')
+        this.$alert('У вас нету для этого прав')
       }
     },
     async changeSize (params) {
-      if (params.finished === true) {
-        const columnData = {
-          catid: await this.$route.params.catId,
-          colid: params.column.colDef.id,
-          width: params.column.actualWidth
+      const id = this.$route.params.catId
+      const areaId = this.$route.params.areaId
+      const rights = await this.$store.dispatch('fetchRights', { areaId })
+      if (rights === 'Admin' || rights[0].rights[id].writeCaty === 'mydvg1cool') {
+        this.gridOptions.api.resetRowHeights()
+        const getWidth = params.columns
+        if (params.finished === true) {
+          this.numStart = '0'
+          for (const widy of getWidth) {
+            const columnData = {
+              catid: this.$route.params.catId,
+              areaId: this.$route.params.areaId,
+              colid: widy.parent.groupId,
+              groid: [this.numStart++],
+              width: widy.actualWidth
+            }
+            this.$store.dispatch('updateColSize', columnData)
+          }
+          this.$message('Размер колонок успешно изменен')
         }
-        this.$store.dispatch('updateColSize', columnData)
-        this.$message('Размер колонок успешно изменен')
+      } else {
+        this.$message('У вас нету для этого прав')
       }
     },
-    changeDrag (params) {
-      const cols = params.columnApi.getAllDisplayedVirtualColumns()
-      console.log(cols[0].colDef.field)
-      if (cols[0].colDef.field !== '') {
-        const field = cols[0].colDef.field
-        const updateColIdx = {
-          catid: this.$route.params.catId,
-          field: field,
-          colnum: 0
+    async changeDrag (params) {
+      const id = this.$route.params.catId
+      const areaId = this.$route.params.areaId
+      const rights = await this.$store.dispatch('fetchRights', { areaId })
+      if (rights === 'Admin' || rights[0].rights[id].writeCaty === 'mydvg1cool') {
+        const cols = params.columnApi.getAllDisplayedVirtualColumns()
+        this.colStart = '0'
+        for (const col of cols) {
+          if (col.colDef.field !== '') {
+            const field = col.colDef.field
+            const updateColIdx = {
+              catid: this.$route.params.catId,
+              areaId: this.$route.params.areaId,
+              field: field,
+              colnum: this.colStart++
+            }
+            this.$store.dispatch('updateIdxColumn', updateColIdx)
+          }
         }
-        this.$store.dispatch('updateIdxColumn', updateColIdx)
+        this.$message('Сохранено')
+      } else {
+        this.$message('У вас нету доступа')
       }
-      if (cols[1].colDef.field !== '') {
-        const field = cols[1].colDef.field
-        const updateColIdx = {
-          catid: this.$route.params.catId,
-          field: field,
-          colnum: 1
-        }
-        this.$store.dispatch('updateIdxColumn', updateColIdx)
-      }
-      if (cols[2].colDef.field !== '') {
-        const field = cols[2].colDef.field
-        const updateColIdx = {
-          catid: this.$route.params.catId,
-          field: field,
-          colnum: 2
-        }
-        this.$store.dispatch('updateIdxColumn', updateColIdx)
-      }
-      if (cols[3].colDef.field) {
-        const field = cols[3].colDef.field
-        const updateColIdx = {
-          catid: this.$route.params.catId,
-          field: field,
-          colnum: 3
-        }
-        this.$store.dispatch('updateIdxColumn', updateColIdx)
-      }
-      if (cols[4].colDef.field !== '') {
-        const field = cols[4].colDef.field
-        const updateColIdx = {
-          catid: this.$route.params.catId,
-          field: field,
-          colnum: 4
-        }
-        this.$store.dispatch('updateIdxColumn', updateColIdx)
-      }
-      if (cols[5].colDef.field !== '') {
-        const field = cols[5].colDef.field
-        const updateColIdx = {
-          catid: this.$route.params.catId,
-          field: field,
-          colnum: 5
-        }
-        this.$store.dispatch('updateIdxColumn', updateColIdx)
-      }
-      if (cols[6].colDef.field !== '') {
-        const field = cols[6].colDef.field
-        const updateColIdx = {
-          catid: this.$route.params.catId,
-          field: field,
-          colnum: 6
-        }
-        this.$store.dispatch('updateIdxColumn', updateColIdx)
-      }
-      this.$message('Сохранено')
     }
   },
   components: {
-    ModalCat,
+    ModalProduct,
     ModalCol,
-    ModalAddUser,
-    'ag-grid-vue': AgGridVue,
-    draggable
+    ModalStatus,
+    Catbar,
+    'ag-grid-vue': AgGridVue
   }
 }
 </script>

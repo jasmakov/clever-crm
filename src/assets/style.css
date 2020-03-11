@@ -22,6 +22,7 @@ table, th, td {
 .auth-submit
 {
     width: 100%;
+    margin-bottom: 10px;
 }
 .helper-text.invalid
 {
@@ -192,11 +193,12 @@ table, th, td {
     font-weight: 500;
 }
 .Delete_Category{
-    display:none;
-    margin-top: -8px;
+    display: none;
+    margin-top: -5px;
     float: right;
     margin-right: -13px;
     color: #fff;
+    font-size: 14pt;
 }
 .Delete_Category:hover{
     color: #f10000;
@@ -204,7 +206,24 @@ table, th, td {
 .Delete_Category:focus{
      color: #f10000;
  }
+.Change_Category{
+    display: none;
+    margin-top: 0px;
+    float: left;
+    margin-left: -15px;
+    color: #fff;
+    position: absolute;
+}
+.Change_Category:hover{
+    color: #f10000;
+}
+.Change_Category:focus{
+    color: #f10000;
+}
 .work_menu:hover .Delete_Category{
+    display:block;
+}
+.work_menu:hover .Change_Category{
     display:block;
 }
 .home_page{
@@ -239,4 +258,72 @@ table, th, td {
     margin-top: 15px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.24);
 }
+.stor_btn{
+    margin-top: 5px;
+    margin-left: 5px;
+    height: 70px;
+    text-align: center;
+}
+.add_categor{
+    font-size: 52pt;
+    color: #fff;
+    padding: 12px;
+    float: left;
+}
+.instorage .v--modal-overlay .v--modal-box {
+    overflow: inherit!important;
+}
+.ag-header-group-cell-with-group {
 
+}
+.search{
+    padding: 0px!important;
+    margin: 0px!important;
+    height: 35px!important;
+}
+.ag-theme-balham .ag-ltr .ag-cell {
+    border-right: 1px solid #cac8c8;
+}
+.ui.search.dropdown .menu {
+    max-height: 8.028571rem;
+}
+.v--modal-overlay .v--modal-box {
+    overflow: scroll!important;
+    max-height: 600px!important;
+}
+.cell-wrap-text {
+    white-space: normal !important;
+}
+.cell-my-status {
+    color: #fff;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+.status_work .cell-my-status {
+    background-color: #999999;
+}
+.status_think .cell-my-status {
+    background-color: #85c6de;
+}
+.status_create .cell-my-status {
+    background-color: #fede22;
+}
+.status_payday .cell-my-status {
+    background-color: #bdae00;
+}
+.status_alrpay .cell-my-status {
+    background-color: #a2c617;
+}
+.status_mailed .cell-my-status {
+    background-color: #008739;
+}
+.status_back .cell-my-status {
+    background-color: #e92919;
+}
+.status_cancel .cell-my-status {
+    background-color: #000000;
+}
+.status_not .cell-my-status {
+    background-color: #fff !important;
+    color: #000;
+}
