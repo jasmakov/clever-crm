@@ -1,51 +1,51 @@
 <template>
-<Loader v-if="loading" />
-<div v-else>
-  <Catbar :categories="categories" :invited="invited" :myinviters="myinviters" :rights="rights"/>
-  <section>
-    <a href="#" @click.prevent="show" class="waves-effect waves-light btn-small" v-tooltip="'Редактировать столбцы'" style="padding: 6px;"><eva-icon name="browser" animation="pulse" fill="white"></eva-icon></a>
-    <div style="height: 100%" :key="columnDefsChoice.length + updateCount">
-      <ag-grid-vue style="height: 600px;" class="ag-theme-balham" id="myGrid"
-                   :gridOptions="gridOptions"
-                   @grid-ready="onGridReady"
-                   :columnDefs="columnDefsChoice"
-                   :defaultColDef="defaultColDef"
-                   :rowHeight="rowHeight"
-                   :modules="modules"
-                   :key="records.length + updateCount"
-                   :suppressDragLeaveHidesColumns="true"
-                   :stopEditingWhenGridLosesFocus="true"
-                   :rowData="newrecord"
-                   :rowClassRules="rowClassRules"
-                   @cellValueChanged="numberParser"
-                   @cellDoubleClicked="editProduct"
-                   @columnResized="changeSize"
-                   @dragStopped="changeDrag">
-      </ag-grid-vue>
-    </div>
-    <modal  name="add-col" transition="nice-modal-fade"
-            :min-width="200"
-            :min-height="200"
-            width="20%"
-            height="auto">
-      <ModalCol :columnDefsChoice="columnDefsChoice" @updated="updateCol"/>
-    </modal>
-    <modal  name="edit-module" transition="nice-modal-fade"
-            :min-width="200"
-            :min-height="200"
-            width="80%"
-            height="auto">
-      <ModalProduct :productObj="productObj" :rowIdforProd="rowIdforProd" @moduled="updateModule"/>
-    </modal>
-    <modal  name="edit-status" transition="nice-modal-fade"
-            :min-width="200"
-            :min-height="200"
-            width="60%"
-            height="auto">
-      <ModalStatus :rowIdforProd="rowIdforProd" @statused="updateStatus"/>
-    </modal>
-  </section>
-</div>
+  <Loader v-if="loading" />
+  <div v-else>
+    <Catbar :categories="categories" :invited="invited" :myinviters="myinviters" :rights="rights"/>
+    <section>
+      <a href="#" @click.prevent="show" class="waves-effect waves-light btn-small" v-tooltip="'Редактировать столбцы'" style="padding: 6px;"><eva-icon name="browser" animation="pulse" fill="white"></eva-icon></a>
+      <a href="#" @click.prevent="deleteRow" class="waves-effect waves-light btn-small" v-tooltip="'Удалить строку(ки)'" style="padding: 6px;"><eva-icon name="trash-2" animation="pulse" fill="white"></eva-icon></a>
+      <div style="height: 100%" :key="columnDefsChoice.length + updateCount">
+        <Loader v-if="loadingtable" />
+        <ag-grid-vue style="height: 600px;" class="ag-theme-balham" :class="{ tablenone: loadingtable }" id="myGrid"
+                     :gridOptions="gridOptions"
+                     :columnDefs="columnDefsChoice"
+                     :defaultColDef="defaultColDef"
+                     :modules="modules"
+                     :key="records.length + updateCount"
+                     :rowData="newrecord"
+                     :rowClassRules="rowClassRules"
+                     :rowSelection="rowSelection"
+                     @cellValueChanged="numberParser"
+                     @cellDoubleClicked="editProduct"
+                     @columnResized="changeSize"
+                     @dragStopped="changeDrag">
+        </ag-grid-vue>
+        <a href="#" class="waves-effect waves-light" v-tooltip="'Редактор прав'" style="padding: 6px;"><eva-icon name="person-add" animation="pulse" fill="white"></eva-icon></a>
+      </div>
+      <modal  name="add-col" transition="nice-modal-fade"
+              :min-width="200"
+              :min-height="200"
+              width="20%"
+              height="auto">
+        <ModalCol :columnDefsChoice="columnDefsChoice" @updated="updateCol"/>
+      </modal>
+      <modal  name="edit-module" transition="nice-modal-fade"
+              :min-width="200"
+              :min-height="200"
+              width="80%"
+              height="auto">
+        <ModalProduct :productObj="productObj" :rowIdforProd="rowIdforProd" @moduled="updateModule"/>
+      </modal>
+      <modal  name="edit-status" transition="nice-modal-fade"
+              :min-width="200"
+              :min-height="200"
+              width="60%"
+              height="auto">
+        <ModalStatus :rowIdforProd="rowIdforProd" @statused="updateStatus"/>
+      </modal>
+    </section>
+  </div>
 </template>
 
 <script>
@@ -61,30 +61,34 @@ export default {
   metaInfo: {
     title: 'CLEVERME CRM'
   },
-  data: () => ({
-    gridOptions: null,
-    gridApi: null,
-    rowHeight: null,
-    defaultColDef: null,
-    rowData: null,
-    columnApi: null,
-    rowClassRules: null,
-    columnDefsChoice: [],
-    productCategory: [],
-    allProduct: [],
-    productObj: [],
-    myinviters: [],
-    invited: [],
-    records: [],
-    categories: [],
-    newrecord: [],
-    rights: [],
-    loading: true,
-    rowIdforProd: '',
-    isHide: false,
-    modules: AllCommunityModules,
-    updateCount: 0
-  }),
+  data: function () {
+    return {
+      gridOptions: null,
+      gridApi: null,
+      columnApi: null,
+      rowHeight: null,
+      defaultColDef: null,
+      rowData: null,
+      rowClassRules: null,
+      rowSelection: null,
+      columnDefsChoice: [],
+      productCategory: [],
+      allProduct: [],
+      productObj: [],
+      myinviters: [],
+      invited: [],
+      records: [],
+      categories: [],
+      newrecord: [],
+      rights: [],
+      loading: true,
+      loadingtable: true,
+      rowIdforProd: '',
+      isHide: false,
+      modules: AllCommunityModules,
+      updateCount: 0
+    }
+  },
   async beforeMount () {
     this.gridOptions = {}
     this.defaultColDef = {
@@ -92,7 +96,14 @@ export default {
       resizable: true,
       sortable: true
     }
-    this.rowHeight = 275
+    this.rowSelection = 'multiple'
+    this.autoGroupColumnDef = {
+      headerName: 'Athlete',
+      field: 'athlete',
+      width: 200,
+      cellRenderer: 'agGroupCellRenderer',
+      cellRendererParams: { checkbox: true }
+    }
   },
   async mounted () {
     const id = this.$route.params.catId
@@ -141,6 +152,15 @@ export default {
     this.productCategory = await this.$store.dispatch('fetchProductsCategory', areaId)
     this.myinviters = await this.$store.dispatch('fetchInviterforInvite', areaId)
     this.loading = false
+    const ColGrid = await this.gridOptions
+    const catyg = await this.$store.dispatch('fetchCategoryById', { id, areaId })
+    ColGrid.columnApi.moveColumn('fio', catyg.fio)
+    ColGrid.columnApi.moveColumn('phoneNumberC', catyg.phoneNumberC)
+    ColGrid.columnApi.moveColumn('moduleOrder', catyg.moduleOrder)
+    ColGrid.columnApi.moveColumn('addressClient', catyg.addressClient)
+    ColGrid.columnApi.moveColumn('tkClient', catyg.tkClient)
+    ColGrid.columnApi.moveColumn('commentWrite', catyg.commentWrite)
+    this.loadingtable = false
   },
   watch: {
     async $route (to) {
@@ -163,7 +183,7 @@ export default {
             phoneNumberC: reco.phoneNumberC,
             priceMod: reco.priceMod,
             tkClient: reco.tkClient,
-            status: reco.status === '0' ? 'Выбрать статус' : '',
+            status: reco.status === '0' ? 'Выбрать статус' : reco.status === '1' ? 'В работе' : reco.status === '2' ? 'Думают' : reco.status === '3' ? 'Собран' : reco.status === '4' ? 'Выставлен счет' : reco.status === '5' ? 'Оплачен' : reco.status === '6' ? 'Отгружен' : reco.status === '7' ? 'Возврат' : reco.status === '8' ? 'Отменен' : '',
             id: reco.id
           }
           this.newrecord.push(allrecord)
@@ -173,19 +193,41 @@ export default {
         this.$alert('У вас нету доступа к этой категории')
       }
       this.loading = false
+      this.loadingtable = true
+      const catyg = await this.$store.dispatch('fetchCategoryById', { id, areaId })
+      const ColGrid = await this.gridOptions
+      ColGrid.columnApi.moveColumn('fio', catyg.fio)
+      ColGrid.columnApi.moveColumn('phoneNumberC', catyg.phoneNumberC)
+      ColGrid.columnApi.moveColumn('moduleOrder', catyg.moduleOrder)
+      ColGrid.columnApi.moveColumn('addressClient', catyg.addressClient)
+      ColGrid.columnApi.moveColumn('tkClient', catyg.tkClient)
+      ColGrid.columnApi.moveColumn('commentWrite', catyg.commentWrite)
+      this.loadingtable = false
     }
   },
   methods: {
-    async onGridReady (params) {
-      const id = this.$route.params.catId
-      const areaId = this.$route.params.areaId
-      const catyg = await this.$store.dispatch('fetchCategoryById', { id, areaId })
-      await params.columnApi.moveColumn('fio', catyg.fio)
-      await params.columnApi.moveColumn('phoneNumberC', catyg.phoneNumberC)
-      await params.columnApi.moveColumn('moduleOrder', catyg.moduleOrder)
-      await params.columnApi.moveColumn('addressClient', catyg.addressClient)
-      await params.columnApi.moveColumn('tkClient', catyg.tkClient)
-      await params.columnApi.moveColumn('commentWrite', catyg.commentWrite)
+    deleteRow () {
+      this.loadingtable = true
+      if (this.rights === 'Admin' || this.rights[0].createCategor === 'mydvg1cool') {
+        this.$confirm('Вы уверены что хотите удалить ?').then(() => {
+          const selectedRows = this.gridOptions.api.getSelectedRows()
+          for (const deleteItem of selectedRows) {
+            const id = this.$route.params.catId
+            const areaId = this.$route.params.areaId
+            const rowid = deleteItem.id
+            this.$store.dispatch('deleteRecord', { id, areaId, rowid })
+            this.newrecord.splice(deleteItem.numIdx - 1, 1)
+          }
+          this.$fire({
+            title: 'Успешно удалено',
+            type: 'success',
+            timer: 3000
+          })
+        })
+      } else {
+        this.$message('У вас нет прав')
+      }
+      this.loadingtable = false
     },
     updateCol (column) {
       const idx = this.columnDefsChoice.findIndex(c => c.groupId === column.id)

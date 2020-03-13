@@ -288,8 +288,10 @@ table, th, td {
     max-height: 8.028571rem;
 }
 .v--modal-overlay .v--modal-box {
-    overflow: scroll!important;
     max-height: 600px!important;
+}
+.page-subtitle h4, .page-title {
+    margin-bottom: 1rem;
 }
 .cell-wrap-text {
     white-space: normal !important;
@@ -326,4 +328,7 @@ table, th, td {
 .status_not .cell-my-status {
     background-color: #fff !important;
     color: #000;
+}
+.tablenone {
+    display: none !important;
 }

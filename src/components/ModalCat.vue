@@ -88,7 +88,7 @@ export default {
           status: '0'
         })
         const childy = [
-          [ { headerName: '', field: 'numIdx', width: 100, cellClass: 'cell-wrap-text', autoHeight: true, hide: false, editable: false } ],
+          [ { headerName: '', field: 'numIdx', width: 100, cellClass: 'cell-wrap-text', autoHeight: true, hide: false, editable: false, cellRenderer: 'agGroupCellRenderer', cellRendererParams: { checkbox: true } } ],
           [ { headerName: '', field: 'fio', width: 200, cellClass: 'cell-wrap-text', autoHeight: true, hide: false } ],
           [ { headerName: '', field: 'phoneNumberC', width: 100, cellClass: 'cell-wrap-text', autoHeight: true, hide: false } ],
           [

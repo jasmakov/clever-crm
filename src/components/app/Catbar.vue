@@ -1,7 +1,7 @@
 <template>
   <div class="page-title">
     <h3>
-      <ul>
+      <ul style="margin: 0;">
         <draggable draggable=".work_menu" @end="onEnd">
           <router-link
             v-for="minecategor in categories"
