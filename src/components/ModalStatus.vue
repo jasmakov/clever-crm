@@ -1,41 +1,27 @@
 <template>
-  <div class="col s12 m6">
+  <div class="col s12 m6" style="padding: 15px">
     <div>
       <div class="page-title" style="width: 100%; margin-bottom: 0; padding: 5px;">
         <h3 style="text-align: center; width: 100%;">Выбрать статус</h3>
       </div>
-      <form @submit.prevent="submitHandler" style="padding: 15px">
-        <div class="input-field" >
-          <select ref="select" v-model="status" id="name">
-            <option value="1">В работе</option>
-            <option value="2">Думают</option>
-            <option value="3">Собран</option>
-            <option value="4">Выставлен счет</option>
-            <option value="5">Оплачен</option>
-            <option value="6">Отгружен</option>
-            <option value="7">Возврат</option>
-            <option value="8">Отменен</option>
-          </select>
-          <label for="name">Выберите статус</label>
-          <span
-            v-if="$v.status.$dirty && !$v.status.required"
-            class="helper-text invalid">
-            Нужно выбрать статус
-          </span>
+        <div class="input-field">
+          <a href="#" class="waves-effect waves-light btn auth-submit" style="background: #999999;" @click.prevent="submitHandler('1')">В работе</a>
+          <a href="#" class="waves-effect waves-light btn auth-submit" style="background: #85c6de;" @click.prevent="submitHandler('2')">Думают</a>
+          <a href="#" class="waves-effect waves-light btn auth-submit" style="background: #fede22;" @click.prevent="submitHandler('3')">Собран</a>
+          <a href="#" class="waves-effect waves-light btn auth-submit" style="background: #bdae00;" @click.prevent="submitHandler('4')">Выставлен счет</a>
+          <a href="#" class="waves-effect waves-light btn auth-submit" style="background: #a2c617;" @click.prevent="submitHandler('5')">Оплачен</a>
+          <a href="#" class="waves-effect waves-light btn auth-submit" style="background: #008739;" @click.prevent="submitHandler('6')">Отгружен</a>
+          <a href="#" class="waves-effect waves-light btn auth-submit" style="background: #e92919;" @click.prevent="submitHandler('7')">Возврат</a>
+          <a href="#" class="waves-effect waves-light btn auth-submit" style="background: #000000;" @click.prevent="submitHandler('8')">Отменен</a>
         </div>
-        <button class="btn waves-effect waves-light" type="submit">
-          Сохранить
-        </button>
         <div class="btn waves-effect waves-light" style="float: right;" @click="hide_stat">
           Закрыть
         </div>
-      </form>
     </div>
   </div>
 </template>
 
 <script>
-import { required } from 'vuelidate/lib/validators'
 export default {
   props: {
     rowIdforProd: {
@@ -43,35 +29,15 @@ export default {
     }
   },
   data: () => ({
-    select: null,
-    status: ''
   }),
-  validations: {
-    status: { required }
-  },
-  mounted () {
-    // eslint-disable-next-line no-undef
-    M.updateTextFields()
-    // eslint-disable-next-line no-undef
-    this.select = M.FormSelect.init(this.$refs.select)
-  },
-  destroyed () {
-    if (this.select && this.select.destroy) {
-      this.select.destroy()
-    }
-  },
   methods: {
-    async submitHandler () {
-      if (this.$v.$invalid) {
-        this.$v.$touch()
-        return
-      }
+    async submitHandler (statusGet) {
       try {
         const moduleData = {
           rowid: this.rowIdforProd,
           catid: await this.$route.params.catId,
           areaId: this.$route.params.areaId,
-          status: this.status
+          status: statusGet
         }
         this.$store.dispatch('updateStatus', moduleData)
         this.$modal.hide('edit-module')

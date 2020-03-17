@@ -35,6 +35,7 @@
     <modal  name="edit-postor" transition="nice-modal-fade"
             :min-width="200"
             :min-height="200"
+            :clickToClose="false"
             width="40%"
             height="auto">
       <ModalEditPro :posbyId="posbyId" @edited="editPosition"/>
@@ -42,6 +43,7 @@
     <modal  name="copy-postor" transition="nice-modal-fade"
             :min-width="200"
             :min-height="200"
+            :clickToClose="false"
             width="40%"
             height="auto">
       <div style="padding: 15px;">

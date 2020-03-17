@@ -17,7 +17,7 @@
                      :rowClassRules="rowClassRules"
                      :rowSelection="rowSelection"
                      @cellValueChanged="numberParser"
-                     @cellDoubleClicked="editProduct"
+                     @cellClicked="editProduct"
                      @columnResized="changeSize"
                      @dragStopped="changeDrag">
         </ag-grid-vue>
@@ -26,6 +26,7 @@
       <modal  name="add-col" transition="nice-modal-fade"
               :min-width="200"
               :min-height="200"
+              :clickToClose="false"
               width="20%"
               height="auto">
         <ModalCol :columnDefsChoice="columnDefsChoice" @updated="updateCol"/>
@@ -33,6 +34,7 @@
       <modal  name="edit-module" transition="nice-modal-fade"
               :min-width="200"
               :min-height="200"
+              :clickToClose="false"
               width="80%"
               height="auto">
         <ModalProduct :productObj="productObj" :rowIdforProd="rowIdforProd" @moduled="updateModule"/>
@@ -40,7 +42,8 @@
       <modal  name="edit-status" transition="nice-modal-fade"
               :min-width="200"
               :min-height="200"
-              width="60%"
+              :clickToClose="false"
+              width="30%"
               height="auto">
         <ModalStatus :rowIdforProd="rowIdforProd" @statused="updateStatus"/>
       </modal>
@@ -97,13 +100,6 @@ export default {
       sortable: true
     }
     this.rowSelection = 'multiple'
-    this.autoGroupColumnDef = {
-      headerName: 'Athlete',
-      field: 'athlete',
-      width: 200,
-      cellRenderer: 'agGroupCellRenderer',
-      cellRendererParams: { checkbox: true }
-    }
   },
   async mounted () {
     const id = this.$route.params.catId
@@ -134,7 +130,7 @@ export default {
           const numSickDays = params.data.status
           return numSickDays === 'В работе'
         },
-        'status_not': 'data.status === "Выбрать статус"',
+        'status_not': 'data.status === ""',
         'status_think': 'data.status === "Думают"',
         'status_create': 'data.status === "Собран"',
         'status_payday': 'data.status === "Выставлен счет"',
@@ -217,6 +213,12 @@ export default {
             const rowid = deleteItem.id
             this.$store.dispatch('deleteRecord', { id, areaId, rowid })
             this.newrecord.splice(deleteItem.numIdx - 1, 1)
+          }
+          let idNum = 1
+          for (const reco of this.newrecord) {
+            const idx = this.newrecord.findIndex(c => c.id === reco.id)
+            this.newrecord[idx].numIdx = idNum++
+            this.updateCount++
           }
           this.$fire({
             title: 'Успешно удалено',

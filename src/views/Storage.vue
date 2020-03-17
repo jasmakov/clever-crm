@@ -37,6 +37,7 @@
   <modal  name="add-catstor" transition="nice-modal-fade"
           :min-width="200"
           :min-height="200"
+          :clickToClose="false"
           width="40%"
           height="auto">
     <form @submit.prevent="submitStorage" style="padding: 15px">

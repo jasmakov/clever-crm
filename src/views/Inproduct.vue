@@ -23,6 +23,7 @@
     <modal  name="add-postor" transition="nice-modal-fade"
             :min-width="200"
             :min-height="200"
+            :clickToClose="false"
             width="40%"
             height="auto">
       <ModalAddProPos @added="addPosition" :categoryStorage="categoryStorage"/>

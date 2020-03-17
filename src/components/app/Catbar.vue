@@ -22,6 +22,7 @@
     <modal  name="add-cat" transition="nice-modal-fade"
             :min-width="200"
             :min-height="200"
+            :clickToClose="false"
             width="20%"
             height="auto">
       <ModalCat @created="addNewCategory" />
@@ -29,6 +30,7 @@
     <modal  name="add-user" transition="nice-modal-fade"
             :min-width="200"
             :min-height="200"
+            :clickToClose="false"
             width="40%"
             height="auto">
       <ModalAddUser :myinviters="myinviters" @invated="addInvUser"/>

@@ -76,6 +76,7 @@
       <modal  name="add-comp" transition="nice-modal-fade"
               :min-width="200"
               :min-height="200"
+              :clickToClose="false"
               width="40%"
               height="auto">
         <div style="padding: 15px;">
@@ -108,6 +109,7 @@
       <modal  name="add-compbyid" transition="nice-modal-fade"
               :min-width="200"
               :min-height="200"
+              :clickToClose="false"
               width="40%"
               height="auto">
         <div style="padding: 15px;">
