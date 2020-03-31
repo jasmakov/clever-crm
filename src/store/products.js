@@ -56,7 +56,44 @@ export default {
         throw e
       }
     },
-    async createProductCompCategory ({ commit, dispatch }, { areaId, articlepos, titlepos, compId, strid, proid }) {
+    async changeCatergoryForProduct ({ commit, dispatch }, { strid, areaId, titlepos, amount, articlepos, comLength, components, howhave, summPrice, salePrice }) {
+      try {
+        const uid = await dispatch('getUid')
+        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
+        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
+        if (takeId.length) {
+          for (const inviter of takeId) {
+            const categoryposstr = await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/products/${strid}/product`).push({
+              titlepos,
+              amount,
+              articlepos,
+              comLength,
+              components,
+              howhave,
+              summPrice,
+              salePrice
+            })
+            return { titlepos, amount, articlepos, comLength, components, howhave, summPrice, salePrice, id: categoryposstr.key }
+          }
+        } else {
+          const categoryposstr = await firebase.database().ref(`/users/${uid}/workareas/${areaId}/products/${strid}/product`).push({
+            titlepos,
+            amount,
+            articlepos,
+            comLength,
+            components,
+            howhave,
+            summPrice,
+            salePrice
+          })
+          return { titlepos, amount, articlepos, comLength, components, howhave, summPrice, salePrice, id: categoryposstr.key }
+        }
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
+    async createProductCompCategory ({ commit, dispatch }, { areaId, articlepos, titlepos, howNeed, compId, catStrId, strid, proid }) {
       try {
         const uid = await dispatch('getUid')
         const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
@@ -66,17 +103,21 @@ export default {
             const categorycomp = await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/products/${strid}/product/${proid}/components`).push({
               articlepos,
               titlepos,
-              compId
+              howNeed,
+              compId,
+              catStrId
             })
-            return { articlepos, titlepos, compId, id: categorycomp.key }
+            return { articlepos, titlepos, howNeed, compId, id: categorycomp.key }
           }
         } else {
           const categorycomp = await firebase.database().ref(`/users/${uid}/workareas/${areaId}/products/${strid}/product/${proid}/components`).push({
             articlepos,
             titlepos,
-            compId
+            howNeed,
+            compId,
+            catStrId
           })
-          return { articlepos, titlepos, compId, id: categorycomp.key }
+          return { articlepos, titlepos, howNeed, compId, id: categorycomp.key }
         }
       } catch (e) {
         commit('setError', e)
@@ -102,6 +143,25 @@ export default {
         throw e
       }
     },
+    async fetchComponentsFromProd ({ commit, dispatch }, { proCatId, areaId, rowId }) {
+      try {
+        const uid = await dispatch('getUid')
+        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
+        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
+        if (takeId.length) {
+          for (const inviter of takeId) {
+            const posstrbyid = (await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/products/${proCatId}/product/${rowId}/components`).once('value')).val() || {}
+            return Object.keys(posstrbyid).map(key => ({ ...posstrbyid[key], id: key }))
+          }
+        } else {
+          const posstrbyid = (await firebase.database().ref(`/users/${uid}/workareas/${areaId}/products/${proCatId}/product/${rowId}/components`).once('value')).val() || {}
+          return Object.keys(posstrbyid).map(key => ({ ...posstrbyid[key], id: key }))
+        }
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
     async updateProductPosotionCategory ({ commit, dispatch }, { id, strid, areaId, titlepos, amount, articlepos }) {
       try {
         const uid = await dispatch('getUid')
@@ -121,6 +181,54 @@ export default {
             amount,
             articlepos
           })
+        }
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
+    async updateProduciton ({ commit, dispatch }, { id, strid, areaId, titlepos, howhave, amount, salePrice, summPrice, rowId }) {
+      try {
+        const uid = await dispatch('getUid')
+        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
+        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
+        if (takeId.length) {
+          for (const inviter of takeId) {
+            await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/products/${id}/addProducts/${rowId}/${strid}`).update({
+              titlepos,
+              howhave,
+              amount,
+              salePrice,
+              summPrice
+            })
+          }
+        } else {
+          await firebase.database().ref(`/users/${uid}/workareas/${areaId}/products/${id}/addProducts/${rowId}/${strid}`).update({
+            titlepos,
+            howhave,
+            amount,
+            salePrice,
+            summPrice
+          })
+        }
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
+    async fetchProductsForModule ({ commit, dispatch }, { proCatId, areaId, rowId }) {
+      try {
+        const uid = await dispatch('getUid')
+        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
+        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
+        if (takeId.length) {
+          for (const inviter of takeId) {
+            const catbIdtable = (await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/products/${proCatId}/addProducts/${rowId}`).once('value')).val() || {}
+            return Object.keys(catbIdtable).map(key => ({ ...catbIdtable[key], id: key, proCatId: proCatId }))
+          }
+        } else {
+          const catbIdtable = (await firebase.database().ref(`/users/${uid}/workareas/${areaId}/products/${proCatId}/addProducts/${rowId}`).once('value')).val() || {}
+          return Object.keys(catbIdtable).map(key => ({ ...catbIdtable[key], id: key, proCatId: proCatId }))
         }
       } catch (e) {
         commit('setError', e)
@@ -173,11 +281,11 @@ export default {
         if (takeId.length) {
           for (const inviter of takeId) {
             const catbIdtable = (await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/products/${proCatId}/product`).once('value')).val() || {}
-            return Object.keys(catbIdtable).map(key => ({ ...catbIdtable[key], id: key }))
+            return Object.keys(catbIdtable).map(key => ({ ...catbIdtable[key], id: key, proCatId: proCatId }))
           }
         } else {
           const catbIdtable = (await firebase.database().ref(`/users/${uid}/workareas/${areaId}/products/${proCatId}/product`).once('value')).val() || {}
-          return Object.keys(catbIdtable).map(key => ({ ...catbIdtable[key], id: key }))
+          return Object.keys(catbIdtable).map(key => ({ ...catbIdtable[key], id: key, proCatId: proCatId }))
         }
       } catch (e) {
         commit('setError', e)

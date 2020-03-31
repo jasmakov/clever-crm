@@ -1,21 +1,26 @@
 <template>
   <div class="page-title">
     <h3>
-      <ul style="margin: 0;">
+      <ul class="work_switch">
         <draggable draggable=".work_menu" @end="onEnd">
           <router-link
             v-for="minecategor in categories"
             :key="minecategor.id" tag="li"
             class="btn-small btn work_menu"
             active-class="active"
-            :to="minecategor.id"
+            :to="'/' + $route.params.areaId + '/' + minecategor.id"
           >
             <a href="#" class="waves-effect waves-light" style="color: #fff;" @dblclick="changeTitle(minecategor.id)" v-tooltip="'Дважды кликните чтобы изменить название'">{{minecategor.title}}
             </a>
             <span @click="deleteCategory(minecategor.id, minecategor.title)" class="Delete_Category">X</span>
           </router-link>
+          <router-link v-if="checkStrSta.status === '1'" tag="li" class="btn-small btn work_menu" active-class="active" :to="'/' + $route.params.areaId + '/storage'">
+            <a href="#" class="waves-effect waves-light" style="color: #fff;">Склад</a>
+          </router-link>
+          <router-link v-if="checkStrSta.status === '1'" tag="li" class="btn-small btn work_menu" active-class="active" :to="'/' + $route.params.areaId + '/products'">
+            <a href="#" class="waves-effect waves-light" style="color: #fff;">Продукция</a>
+          </router-link>
           <li class="btn-small btn" v-if="rights === 'Admin' || rights[0].createCategor === 'mydvg1cool'" @click.prevent="show_cat"><a href="#" class="waves-effect waves-light" v-tooltip="'Добавить категорию'" style="padding: 6px;"><eva-icon name="plus" animation="pulse" fill="white"></eva-icon></a></li>
-          <li class="btn-small btn" v-if="rights === 'Admin'" @click.prevent="show_adduser"><a href="#" class="waves-effect waves-light" v-tooltip="'Редактор прав'" style="padding: 6px;"><eva-icon name="person-add" animation="pulse" fill="white"></eva-icon></a></li>
         </draggable>
       </ul>
     </h3>
@@ -25,33 +30,16 @@
             :clickToClose="false"
             width="20%"
             height="auto">
-      <ModalCat @created="addNewCategory" />
-    </modal>
-    <modal  name="add-user" transition="nice-modal-fade"
-            :min-width="200"
-            :min-height="200"
-            :clickToClose="false"
-            width="40%"
-            height="auto">
-      <ModalAddUser :myinviters="myinviters" @invated="addInvUser"/>
+      <ModalCat :checkStrSta="checkStrSta" @created="addNewCategory" />
     </modal>
   </div>
 </template>
 <script>
 import ModalCat from '../ModalCat'
-import ModalAddUser from '../ModalAddUser'
 import draggable from 'vuedraggable'
 export default {
   props: {
     categories: {
-      type: Array,
-      required: true
-    },
-    invited: {
-      type: Array,
-      required: true
-    },
-    myinviters: {
       type: Array,
       required: true
     },
@@ -61,9 +49,11 @@ export default {
     }
   },
   data: () => ({
-
+    checkStrSta: ''
   }),
   async mounted () {
+    const areaId = this.$route.params.areaId
+    this.checkStrSta = await this.$store.dispatch('fetchStorageStatus', { areaId })
   },
   methods: {
     onEnd (draggedContext) {
@@ -72,24 +62,16 @@ export default {
     addNewCategory (category) {
       if (this.rights === 'Admin' || this.rights[0].createCategor === 'mydvg1cool') {
         this.categories.push(category)
+        const areaId = this.$route.params.areaId
+        this.$router.push('/' + areaId + '/' + category.id)
         this.$modal.hide('add-cat')
       } else {
         this.$message('У вас нет прав')
       }
     },
-    addInvUser (inviter) {
-      this.myinviters.push(inviter)
-    },
     async show_cat () {
       if (this.rights === 'Admin' || this.rights[0].createCategor === 'mydvg1cool') {
         this.$modal.show('add-cat')
-      } else {
-        this.$message('У вас нет прав')
-      }
-    },
-    async show_adduser () {
-      if (this.rights === 'Admin' || this.rights[0].createCategor === 'mydvg1cool') {
-        this.$modal.show('add-user')
       } else {
         this.$message('У вас нет прав')
       }
@@ -129,7 +111,6 @@ export default {
   },
   components: {
     ModalCat,
-    ModalAddUser,
     draggable
   }
 }

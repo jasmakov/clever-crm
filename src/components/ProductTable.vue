@@ -49,6 +49,9 @@
       <div style="padding: 15px;">
         <div class="page-title" style="width: 100%;">
           <h3 style="text-align: center; width: 100%;">Выберите категорию для позиции "{{nextPos.titlepos}}"</h3>
+          <div class="btn waves-effect waves-light" style="float: right;" @click.prevent="$modal.hide('copy-postor')">
+            X
+          </div>
         </div>
         <table>
           <thead>
@@ -90,7 +93,7 @@ export default {
   data: () => ({
     dropdown: null,
     posbyId: '',
-    nextPos: ''
+    nextPos: []
   }),
   mounted () {
     const elems = document.querySelectorAll('.dropdown-trigger')
@@ -115,15 +118,18 @@ export default {
     async changeCategory (catId, title, lastPos) {
       await this.$confirm('Вы уверены что хотите переместить "' + lastPos.titlepos + '" в "' + title + '" ?').then(() => {
         const newCatForPos = {
+          comLength: lastPos.comLength,
+          components: lastPos.components,
           strid: catId,
           areaId: this.$route.params.areaId,
           titlepos: lastPos.titlepos,
-          unitstr: lastPos.unitstr,
           amount: lastPos.amount,
           articlepos: lastPos.articlepos,
-          howleft: lastPos.howleft
+          howhave: lastPos.howhave,
+          summPrice: lastPos.amount,
+          salePrice: ''
         }
-        this.$store.dispatch('createProductPosotionCategory', newCatForPos)
+        this.$store.dispatch('changeCatergoryForProduct', newCatForPos)
         const strId = this.$route.params.proId
         const id = lastPos.id
         this.$store.dispatch('deleteProductPosition', { id, strId, areaId: this.$route.params.areaId })

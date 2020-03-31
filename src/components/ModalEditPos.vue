@@ -10,9 +10,9 @@
             id="name"
             type="text"
             v-model.trim="titlepos"
+            placeholder="Наименование"
             :class="{invalid: ($v.titlepos.$dirty && !$v.titlepos.required) || ($v.titlepos.$dirty && !$v.titlepos.minLength)}"
           >
-          <label for="name">Наименование</label>
           <small
             class="helper-text invalid"
             v-if="$v.titlepos.$dirty && !$v.titlepos.required"
@@ -26,10 +26,10 @@
           <input
             id="article"
             type="number"
+            placeholder="Артикул"
             v-model.trim="articlepos"
             :class="{invalid: ($v.articlepos.$dirty && !$v.articlepos.required) || ($v.articlepos.$dirty && !$v.articlepos.minLength)}"
           >
-          <label for="article">Артикул</label>
           <small
             class="helper-text invalid"
             v-if="$v.articlepos.$dirty && !$v.articlepos.required"
@@ -42,11 +42,11 @@
         <div class="input-field" >
           <input
             id="howleft"
+            placeholder="Остаток на текущий момент"
             type="number"
             v-model.trim="howleft"
             :class="{invalid: ($v.howleft.$dirty && !$v.howleft.required) || ($v.howleft.$dirty && !$v.howleft.minLength)}"
           >
-          <label for="howleft">Остаток на текущий момент</label>
           <small
             class="helper-text invalid"
             v-if="$v.howleft.$dirty && !$v.howleft.required"
@@ -67,7 +67,6 @@
             <option value="Кг">Килограмм</option>
             <option value="Мг">Миллиграмм</option>
           </select>
-          <label for="unit">Выберите единицу измерения</label>
           <span
             v-if="$v.unitstr.$dirty && !$v.unitstr.required"
             class="helper-text invalid">
@@ -81,7 +80,6 @@
             <option value="3">Готовый продукт и компонент</option>
             <option value="0">Без статуса</option>
           </select>
-          <label for="choose_status">Определите статус</label>
           <span
             v-if="$v.choostatus.$dirty && !$v.choostatus.required"
             class="helper-text invalid">
@@ -125,18 +123,18 @@ export default {
     articlepos: { numeric, required, minLength: minLength(1) },
     howleft: { numeric, required, minLength: minLength(1) }
   },
-  mounted () {
+  async mounted () {
+    this.titlepos = await this.posbyId.titlepos
+    this.articlepos = await this.posbyId.articlepos
+    this.choostatus = await this.posbyId.choostatus
+    this.unitstr = await this.posbyId.unitstr
+    this.howleft = await this.posbyId.howleft
     // eslint-disable-next-line no-undef
     M.updateTextFields()
     // eslint-disable-next-line no-undef
     this.select = M.FormSelect.init(this.$refs.select)
     // eslint-disable-next-line no-undef
     this.selectstatus = M.FormSelect.init(this.$refs.selectstatus)
-    this.titlepos = this.posbyId.titlepos
-    this.unitstr = this.posbyId.unitstr
-    this.choostatus = this.posbyId.choostatus
-    this.articlepos = this.posbyId.articlepos
-    this.howleft = this.posbyId.howleft
   },
   destroyed () {
     if (this.select && this.select.destroy) {

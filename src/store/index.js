@@ -8,6 +8,7 @@ import inviter from './inviter'
 import storage from './storage'
 import products from './products'
 import workarea from './workarea'
+import column from './column'
 
 Vue.use(Vuex)
 
@@ -35,6 +36,6 @@ export default new Vuex.Store({
     error: s => s.error
   },
   modules: {
-    auth, info, category, record, inviter, storage, products, workarea
+    auth, info, category, record, inviter, storage, products, workarea, column
   }
 })

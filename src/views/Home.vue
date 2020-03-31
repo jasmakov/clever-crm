@@ -13,7 +13,7 @@
             :min-height="200"
             width="20%"
             height="auto">
-      <ModalCat @created="addNewCategory" />
+      <ModalCat :checkStrSta="checkStrSta" @created="addNewCategory" />
     </modal>
   </div>
 </template>
@@ -27,11 +27,12 @@ export default {
   },
   data: function () {
     return {
-
+      checkStrSta: []
     }
   },
   async mounted () {
     const areaId = this.$route.params.areaId
+    this.checkStrSta = await this.$store.dispatch('fetchStorageCategory', { areaId })
     const categories = await this.$store.dispatch('fetchCategories', areaId)
     if (categories.length) {
       this.$router.push('/' + areaId + '/' + categories[0].id)
@@ -40,8 +41,8 @@ export default {
   methods: {
     async addNewCategory (category) {
       const areaId = this.$route.params.areaId
-      await this.$modal.hide('add-cat')
-      await this.$router.push('/' + areaId + '/' + category.id)
+      this.$modal.hide('add-cat')
+      this.$router.push('/' + areaId + '/' + category.id)
     },
     async show_cat () {
       this.$modal.show('add-cat')

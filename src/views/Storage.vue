@@ -1,18 +1,7 @@
 <template>
 <Loader v-if="loading" />
 <div v-else>
-  <section>
-    <router-link
-      class="btn-small btn work_menu"
-      style="float: right"
-      active-class="active"
-      :to="'/' + $route.params.areaId + '/products'">
-      Готовая продукция
-    </router-link>
-  </section>
-  <div class="page-title" style="width: 100%;">
-    <h3 style="text-align: center; width: 100%;">Внутренний склад</h3>
-  </div>
+  <Catbar :categories="categories" :rights="rights"/>
   <section>
     <ul>
         <router-link
@@ -77,6 +66,7 @@
 
 <script>
 import { required, minLength } from 'vuelidate/lib/validators'
+import Catbar from '../components/app/Catbar'
 export default {
   name: 'storage',
   metaInfo: {
@@ -85,6 +75,8 @@ export default {
   data: () => ({
     loading: true,
     titlestr: '',
+    categories: [],
+    rights: [],
     categoryStorage: [],
     createSameName: ''
   }),
@@ -93,13 +85,17 @@ export default {
   },
   async mounted () {
     const areaId = this.$route.params.areaId
-    const rights = await this.$store.dispatch('fetchRights', { areaId })
-    if (rights === 'Admin' || rights[0].storageAccept === 'mydvg1cool') {
+    this.categories = await this.$store.dispatch('fetchCategories', areaId)
+    this.rights = await this.$store.dispatch('fetchRights', { areaId })
+    if (this.rights === 'Admin' || this.rights[0].storageAccept === 'mydvg1cool') {
       this.categoryStorage = await this.$store.dispatch('fetchStorageCategory', { areaId })
       this.loading = false
     } else {
       this.$router.push('/' + areaId)
     }
+  },
+  components: {
+    Catbar
   },
   methods: {
     async showaddstor () {

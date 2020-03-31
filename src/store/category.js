@@ -61,23 +61,6 @@ export default {
         throw e
       }
     },
-    async updateColForChild ({ commit, dispatch }, { catid, areaId, hide, id, childId }) {
-      try {
-        const uid = await dispatch('getUid')
-        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
-        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
-        if (takeId.length) {
-          for (const inviter of takeId) {
-            await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/records/${catid}/columnDefs/${id}/children`).child(childId).update({ hide })
-          }
-        } else {
-          await firebase.database().ref(`/users/${uid}/workareas/${areaId}/records/${catid}/columnDefs/${id}/children`).child(childId).update({ hide })
-        }
-      } catch (e) {
-        commit('setError', e)
-        throw e
-      }
-    },
     async updateIdxColumn ({ commit, dispatch }, { catid, areaId, field, colnum }) {
       try {
         const uid = await dispatch('getUid')
@@ -135,19 +118,19 @@ export default {
         throw e
       }
     },
-    async createCategory ({ commit, dispatch }, { areaId, title, numIdx, fio, moduleOrder, phoneNumberC, addressClient, tkClient, commentWrite, status }) {
+    async createCategory ({ commit, dispatch }, { areaId, title }) {
       try {
         const uid = await dispatch('getUid')
         const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
         const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
         if (takeId.length) {
           for (const inviter of takeId) {
-            const category = await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/categories`).push({ title, numIdx, fio, moduleOrder, phoneNumberC, addressClient, tkClient, commentWrite, status })
-            return { title, numIdx, fio, moduleOrder, phoneNumberC, addressClient, tkClient, commentWrite, status, id: category.key }
+            const category = await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/categories`).push({ title })
+            return { title, id: category.key }
           }
         } else {
-          const category = await firebase.database().ref(`/users/${uid}/workareas/${areaId}/categories`).push({ title, numIdx, fio, moduleOrder, phoneNumberC, addressClient, tkClient, commentWrite, status })
-          return { title, numIdx, fio, moduleOrder, phoneNumberC, addressClient, tkClient, commentWrite, status, id: category.key }
+          const category = await firebase.database().ref(`/users/${uid}/workareas/${areaId}/categories`).push({ title })
+          return { title, id: category.key }
         }
       } catch (e) {
         commit('setError', e)

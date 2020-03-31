@@ -57,7 +57,7 @@ const routes = [
     path: '/:areaId',
     name: 'home',
     meta: { layout: 'main', auth: true },
-    component: () => import('../views/Home.vue')
+    component: () => import('../views/Category.vue')
   },
   {
     path: '/',

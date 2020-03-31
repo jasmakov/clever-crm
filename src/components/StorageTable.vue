@@ -54,6 +54,9 @@
       <div style="padding: 15px;">
         <div class="page-title" style="width: 100%;">
           <h3 style="text-align: center; width: 100%;">Выберите категорию для позиции "{{nextPos.titlepos}}"</h3>
+          <div class="btn waves-effect waves-light" style="float: right;" @click.prevent="$modal.hide('copy-postor')">
+            X
+          </div>
         </div>
         <table>
           <thead>

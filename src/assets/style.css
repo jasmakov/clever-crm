@@ -30,7 +30,17 @@ table, th, td {
 }
 .app-page
 {
-    padding: 2rem;
+
+}
+.logo{
+    margin-right: 2rem;
+}
+.search_row{
+    margin-right: 2rem;
+}
+.work_switch{
+    margin: 0;
+    padding-left: 2rem !important;
 }
 .app-main-layout
 {
@@ -117,6 +127,7 @@ table, th, td {
 .page-subtitle h4,.page-title
 {
     margin-bottom: 2rem;
+    padding-bottom: 8px;
 }
 .app-loader,.currency-line,.page-title
 {
@@ -237,6 +248,16 @@ table, th, td {
 .one-invuser{
     padding: 5px;
 }
+.one-invuser {
+    color: #000000;
+}
+.one-invuser a {
+    color: #008739;
+    opacity: 0.9;
+}
+.one-invuser a:hover{
+    opacity: 1;
+}
 .one-invuser h4{
     text-align: center;
     font-size: 18pt;
@@ -251,7 +272,11 @@ table, th, td {
 }
 .change_rights h4{
     text-align: center;
+    color: #000;
     font-size: 18pt;
+}
+.change_rights span{
+    color: #000;
 }
 .change_rights .row{
     margin-bottom: 5px;
@@ -331,4 +356,16 @@ table, th, td {
 }
 .tablenone {
     display: none !important;
+}
+.final-price {
+    float: right;
+    padding: 5px;
+    font-weight: bold;
+}
+.components li {
+    margin-bottom: 10px;
+}
+.components .add-components {
+    margin-top: 35px;
+    font-weight: bold;
 }

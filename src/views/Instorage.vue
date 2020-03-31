@@ -1,13 +1,8 @@
 <template>
   <Loader v-if="loading" />
   <div class="instorage" v-else>
+    <Catbar :categories="categories" :rights="rights"/>
     <section>
-      <router-link
-        class="btn-small btn work_menu"
-        style="float: right"
-        :to="'/' + $route.params.areaId + '/products'">
-        Готовая продукция
-      </router-link>
       <router-link
         class="btn-small btn work_menu"
         style="float: left"
@@ -39,6 +34,7 @@
 <script>
 import ModalAddStrPos from '../components/ModalAddStrPos'
 import StorageTable from '../components/StorageTable'
+import Catbar from '../components/app/Catbar'
 export default {
   name: 'instorage',
   metaInfo: {
@@ -48,13 +44,16 @@ export default {
     catbyId: [],
     catbyIdTable: [],
     categoryStorage: [],
+    categories: [],
+    rights: [],
     loading: true
   }),
   async mounted () {
     const id = this.$route.params.strId
     const areaId = this.$route.params.areaId
-    const rights = await this.$store.dispatch('fetchRights', { areaId })
-    if (rights === 'Admin' || rights[0].storageAccept === 'mydvg1cool') {
+    this.categories = await this.$store.dispatch('fetchCategories', areaId)
+    this.rights = await this.$store.dispatch('fetchRights', { areaId })
+    if (this.rights === 'Admin' || this.rights[0].storageAccept === 'mydvg1cool') {
       this.catbyId = await this.$store.dispatch('fetchStorageCategoryById', { id, areaId })
       this.catbyIdTable = await this.$store.dispatch('fetchStorageCategoryTableById', { id, areaId })
       this.categoryStorage = await this.$store.dispatch('fetchStorageCategory', { areaId })
@@ -72,7 +71,7 @@ export default {
     }
   },
   components: {
-    ModalAddStrPos, StorageTable
+    ModalAddStrPos, StorageTable, Catbar
   }
 }
 </script>

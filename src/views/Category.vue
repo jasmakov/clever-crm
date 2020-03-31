@@ -1,27 +1,34 @@
 <template>
   <Loader v-if="loading" />
   <div v-else>
-    <Catbar :categories="categories" :invited="invited" :myinviters="myinviters" :rights="rights"/>
+    <Catbar :categories="categories" :rights="rights"/>
     <section>
-      <a href="#" @click.prevent="show" class="waves-effect waves-light btn-small" v-tooltip="'Редактировать столбцы'" style="padding: 6px;"><eva-icon name="browser" animation="pulse" fill="white"></eva-icon></a>
-      <a href="#" @click.prevent="deleteRow" class="waves-effect waves-light btn-small" v-tooltip="'Удалить строку(ки)'" style="padding: 6px;"><eva-icon name="trash-2" animation="pulse" fill="white"></eva-icon></a>
-      <div style="height: 100%" :key="columnDefsChoice.length + updateCount">
-        <Loader v-if="loadingtable" />
-        <ag-grid-vue style="height: 600px;" class="ag-theme-balham" :class="{ tablenone: loadingtable }" id="myGrid"
-                     :gridOptions="gridOptions"
-                     :columnDefs="columnDefsChoice"
-                     :defaultColDef="defaultColDef"
-                     :modules="modules"
-                     :key="records.length + updateCount"
-                     :rowData="newrecord"
-                     :rowClassRules="rowClassRules"
-                     :rowSelection="rowSelection"
-                     @cellValueChanged="numberParser"
-                     @cellClicked="editProduct"
-                     @columnResized="changeSize"
-                     @dragStopped="changeDrag">
-        </ag-grid-vue>
-        <a href="#" class="waves-effect waves-light" v-tooltip="'Редактор прав'" style="padding: 6px;"><eva-icon name="person-add" animation="pulse" fill="white"></eva-icon></a>
+      <div v-if="categories.length">
+        <a href="#" @click.prevent="show" class="waves-effect waves-light btn-small" v-tooltip="'Редактировать столбцы'" style="padding: 6px;"><eva-icon name="browser" animation="pulse" fill="white"></eva-icon></a>
+        <a href="#" @click.prevent="deleteRow" class="waves-effect waves-light btn-small" v-tooltip="'Удалить строку(ки)'" style="padding: 6px;"><eva-icon name="trash-2" animation="pulse" fill="white"></eva-icon></a>
+        <a href="#" @click.prevent="addRow" class="waves-effect waves-light btn-small" v-tooltip="'Добавить строку'" style="padding: 6px;"><eva-icon name="plus" animation="pulse" fill="white"></eva-icon></a>
+        <div :key="columnDefsChoice.length + updateCount">
+          <Loader v-if="loadingtable" />
+          <ag-grid-vue style="height: 78vh;" class="ag-theme-balham" :class="{ tablenone: loadingtable }" id="myGrid"
+                       :gridOptions="gridOptions"
+                       :columnDefs="columnDefsChoice"
+                       :defaultColDef="defaultColDef"
+                       :modules="modules"
+                       :key="records.length + updateCount"
+                       :rowData="newrecord"
+                       :rowClassRules="rowClassRules"
+                       :rowSelection="rowSelection"
+                       @cellValueChanged="numberParser"
+                       @cellClicked="editProduct"
+                       @columnResized="changeSize"
+                       @dragStopped="changeDrag">
+          </ag-grid-vue>
+        </div>
+      </div>
+      <div v-else>
+        <p class="center">
+          Категорий нету. Создайте первую категорию
+        </p>
       </div>
       <modal  name="add-col" transition="nice-modal-fade"
               :min-width="200"
@@ -29,7 +36,7 @@
               :clickToClose="false"
               width="20%"
               height="auto">
-        <ModalCol :columnDefsChoice="columnDefsChoice" @updated="updateCol"/>
+        <ModalCol :GetAllCollumns="GetAllCollumns" :fetchColOff="fetchColOff" @updated="updateCol" @added="addCols"/>
       </modal>
       <modal  name="edit-module" transition="nice-modal-fade"
               :min-width="200"
@@ -37,7 +44,7 @@
               :clickToClose="false"
               width="80%"
               height="auto">
-        <ModalProduct :productObj="productObj" :rowIdforProd="rowIdforProd" @moduled="updateModule"/>
+        <ModalProduct :rowIdforProd="rowIdforProd" @moduled="updateModule"/>
       </modal>
       <modal  name="edit-status" transition="nice-modal-fade"
               :min-width="200"
@@ -75,12 +82,10 @@ export default {
       rowClassRules: null,
       rowSelection: null,
       columnDefsChoice: [],
-      productCategory: [],
       allProduct: [],
-      productObj: [],
-      myinviters: [],
-      invited: [],
       records: [],
+      GetAllCollumns: [],
+      fetchColOff: [],
       categories: [],
       newrecord: [],
       rights: [],
@@ -104,59 +109,67 @@ export default {
   async mounted () {
     const id = this.$route.params.catId
     const areaId = this.$route.params.areaId
+    this.categories = await this.$store.dispatch('fetchCategories', areaId)
+    this.GetAllCollumns = await this.$store.dispatch('fetchColumns')
     this.rights = await this.$store.dispatch('fetchRights', { areaId })
     if (this.rights === 'Admin' || this.rights[0].rights[id].readCaty === 'mydvg1cool') {
-      this.gridApi = this.gridOptions.api
-      this.records = await this.$store.dispatch('fetchRecords', { id, areaId })
-      let idx = 1
-      for (const reco of this.records) {
-        const allrecord = {
-          numIdx: idx++,
-          addressClient: reco.addressClient,
-          commentWrite: reco.commentWrite,
-          fio: reco.fio,
-          muchMod: reco.muchMod,
-          nameMod: reco.nameMod,
-          phoneNumberC: reco.phoneNumberC,
-          priceMod: reco.priceMod,
-          tkClient: reco.tkClient,
-          status: reco.status === '0' ? 'Выбрать статус' : reco.status === '1' ? 'В работе' : reco.status === '2' ? 'Думают' : reco.status === '3' ? 'Собран' : reco.status === '4' ? 'Выставлен счет' : reco.status === '5' ? 'Оплачен' : reco.status === '6' ? 'Отгружен' : reco.status === '7' ? 'Возврат' : reco.status === '8' ? 'Отменен' : '',
-          id: reco.id
+      if (this.categories.length) {
+        if (this.$router.app._route.path === '/' + areaId) {
+          this.$router.push('/' + areaId + '/' + this.categories[0].id)
         }
-        this.newrecord.push(allrecord)
+        this.gridApi = this.gridOptions.api
+        this.records = await this.$store.dispatch('fetchRecords', { id, areaId })
+        let idx = 1
+        for (const reco of this.records) {
+          const allrecord = {
+            numIdx: idx++,
+            addressClient: reco.addressClient,
+            commentWrite: reco.commentWrite,
+            fio: reco.fio,
+            muchMod: reco.muchMod,
+            nameMod: reco.nameMod,
+            phoneNumberC: reco.phoneNumberC,
+            priceMod: reco.priceMod,
+            tkClient: reco.tkClient,
+            status: reco.status === '0' ? 'Выбрать статус' : reco.status === '1' ? 'В работе' : reco.status === '2' ? 'Думают' : reco.status === '3' ? 'Собран' : reco.status === '4' ? 'Выставлен счет' : reco.status === '5' ? 'Оплачен' : reco.status === '6' ? 'Отгружен' : reco.status === '7' ? 'Возврат' : reco.status === '8' ? 'Отменен' : '',
+            id: reco.id
+          }
+          this.newrecord.push(allrecord)
+        }
+        this.rowClassRules = {
+          'status_work': params => {
+            const numSickDays = params.data.status
+            return numSickDays === 'В работе'
+          },
+          'status_not': 'data.status === ""',
+          'status_think': 'data.status === "Думают"',
+          'status_create': 'data.status === "Собран"',
+          'status_payday': 'data.status === "Выставлен счет"',
+          'status_alrpay': 'data.status === "Оплачен"',
+          'status_mailed': 'data.status === "Отгружен"',
+          'status_back': 'data.status === "Возврат"',
+          'status_cancel': 'data.status === "Отменен"'
+        }
+        this.columnDefsChoice = await this.$store.dispatch('fetchColumnForChoice', { id, areaId })
+        this.loading = false
+        this.loadingtable = true
+        const ColGrid = await this.gridOptions
+        const catyg = await this.$store.dispatch('fetchCategoryById', { id, areaId })
+        ColGrid.columnApi.moveColumn('fio', catyg.fio)
+        ColGrid.columnApi.moveColumn('phoneNumberC', catyg.phoneNumberC)
+        ColGrid.columnApi.moveColumn('moduleOrder', catyg.moduleOrder)
+        ColGrid.columnApi.moveColumn('addressClient', catyg.addressClient)
+        ColGrid.columnApi.moveColumn('tkClient', catyg.tkClient)
+        ColGrid.columnApi.moveColumn('commentWrite', catyg.commentWrite)
+        ColGrid.columnApi.moveColumn('status', catyg.status)
+        this.loadingtable = false
+      } else {
+        this.loading = false
+        this.loadingtable = false
       }
-      this.rowClassRules = {
-        'status_work': params => {
-          const numSickDays = params.data.status
-          return numSickDays === 'В работе'
-        },
-        'status_not': 'data.status === ""',
-        'status_think': 'data.status === "Думают"',
-        'status_create': 'data.status === "Собран"',
-        'status_payday': 'data.status === "Выставлен счет"',
-        'status_alrpay': 'data.status === "Оплачен"',
-        'status_mailed': 'data.status === "Отгружен"',
-        'status_back': 'data.status === "Возврат"',
-        'status_cancel': 'data.status === "Отменен"'
-      }
-      this.columnDefsChoice = await this.$store.dispatch('fetchColumnForChoice', { id, areaId })
     } else {
       this.$alert('У вас нету доступа к этой категории')
     }
-    this.invited = await this.$store.dispatch('fetchInvited', areaId)
-    this.categories = await this.$store.dispatch('fetchCategories', areaId)
-    this.productCategory = await this.$store.dispatch('fetchProductsCategory', areaId)
-    this.myinviters = await this.$store.dispatch('fetchInviterforInvite', areaId)
-    this.loading = false
-    const ColGrid = await this.gridOptions
-    const catyg = await this.$store.dispatch('fetchCategoryById', { id, areaId })
-    ColGrid.columnApi.moveColumn('fio', catyg.fio)
-    ColGrid.columnApi.moveColumn('phoneNumberC', catyg.phoneNumberC)
-    ColGrid.columnApi.moveColumn('moduleOrder', catyg.moduleOrder)
-    ColGrid.columnApi.moveColumn('addressClient', catyg.addressClient)
-    ColGrid.columnApi.moveColumn('tkClient', catyg.tkClient)
-    ColGrid.columnApi.moveColumn('commentWrite', catyg.commentWrite)
-    this.loadingtable = false
   },
   watch: {
     async $route (to) {
@@ -202,6 +215,28 @@ export default {
     }
   },
   methods: {
+    async addRow () {
+      const emptyRowData = {
+        categoryId: this.$route.params.catId,
+        areaId: this.$route.params.areaId,
+        fio: '',
+        phoneNumberC: '',
+        addressClient: '',
+        tkClient: '',
+        commentWrite: '',
+        nameMod: '',
+        muchMod: '',
+        priceMod: '',
+        status: '0'
+      }
+      const takerecord = await this.$store.dispatch('createEmptyRow', emptyRowData)
+      takerecord.status = takerecord.status === '0' ? 'Выбрать статус' : ''
+      const Idx = {
+        numIdx: this.records.length + 1
+      }
+      const emptyValue = { ...takerecord, ...Idx }
+      this.newrecord.push(emptyValue)
+    },
     deleteRow () {
       this.loadingtable = true
       if (this.rights === 'Admin' || this.rights[0].createCategor === 'mydvg1cool') {
@@ -231,15 +266,12 @@ export default {
       }
       this.loadingtable = false
     },
-    updateCol (column) {
-      const idx = this.columnDefsChoice.findIndex(c => c.groupId === column.id)
-      if (column.catData === 'moduleOrder') {
-        this.columnDefsChoice[idx].children[0].hide = column.hide
-        this.columnDefsChoice[idx].children[1].hide = column.hide
-        this.columnDefsChoice[idx].children[2].hide = column.hide
-      } else {
-        this.columnDefsChoice[idx].children[0].hide = column.hide
-      }
+    async updateCol (column) {
+      this.columnDefsChoice.push(column)
+    },
+    addCols (columns) {
+      const idx = this.columnDefsChoice.findIndex(c => c.groupId === columns.id)
+      this.columnDefsChoice[idx].hide = columns.hide
       this.updateCount++
     },
     updateModule (module) {
@@ -259,6 +291,7 @@ export default {
       const areaId = this.$route.params.areaId
       const rights = await this.$store.dispatch('fetchRights', { areaId })
       if (rights === 'Admin' || rights[0].rights[id].writeCaty === 'mydvg1cool') {
+        this.fetchColOff = await this.$store.dispatch('fetchColumnForOff', { catId: this.$route.params.catId, areaId })
         this.$modal.show('add-col')
       } else {
         this.$alert('У вас нету доступа к этой функции')
@@ -269,19 +302,9 @@ export default {
       const areaId = this.$route.params.areaId
       const rights = await this.$store.dispatch('fetchRights', { areaId })
       if (rights === 'Admin' || rights[0].rights[id].writeCaty === 'mydvg1cool') {
-        this.productObj = []
         this.rowIdforProd = params.data.id
         if (params.colDef.field === 'nameMod' || params.colDef.field === 'muchMod' || params.colDef.field === 'priceMod') {
           this.$modal.show('edit-module')
-          for (const prodForAdd of this.productCategory) {
-            const proCatId = prodForAdd.id
-            const areaId = this.$route.params.areaId
-            this.allProduct = await this.$store.dispatch('fetchProductsCategoryTableById', { proCatId, areaId })
-            console.log(this.allProduct)
-            for (const prody of this.allProduct) {
-              this.productObj.push(prody)
-            }
-          }
         }
         if (params.colDef.field === 'status') {
           this.$modal.show('edit-status')
@@ -306,38 +329,6 @@ export default {
           commentWrite: params.colDef.field === 'commentWrite' ? params.newValue : params.data.commentWrite
         }
         this.$store.dispatch('updateRecord', recordData)
-        const id = await this.$route.params.catId
-        const areaId = this.$route.params.areaId
-        const records = await this.$store.dispatch('fetchRecords', { id, areaId })
-        const lastRecord = records[records.length - 1]
-        if (lastRecord.fio !== '' || lastRecord.phoneNumberC !== '' || lastRecord.nameMod !== '' || lastRecord.muchMod !== '' || lastRecord.priceMod !== '' || lastRecord.addressClient !== '' || lastRecord.tkClient !== '' || lastRecord.commentWrite !== '') {
-          const emptyRowData = {
-            categoryId: id,
-            areaId: areaId,
-            fio: '',
-            phoneNumberC: '',
-            addressClient: '',
-            tkClient: '',
-            commentWrite: '',
-            nameMod: '',
-            muchMod: '',
-            priceMod: '',
-            status: '0'
-          }
-          const takerecord = await this.$store.dispatch('createEmptyRow', emptyRowData)
-          takerecord.status = takerecord.status === '0' ? 'Выбрать статус' : ''
-          const Idx = {
-            numIdx: records.length + 1
-          }
-          const emptyValue = { ...takerecord, ...Idx }
-          this.newrecord.push(emptyValue)
-        }
-        if (params.data.fio === '' & params.data.phoneNumberC === '' & params.data.addressClient === '' & params.data.tkClient === '' & params.data.commentWrite === '' & params.data.nameMod === '' & params.data.muchMod === '' & params.data.priceMod === '' & lastRecord.id !== params.data.id) {
-          const rowid = params.data.id
-          this.$store.dispatch('deleteRecord', { id, areaId, rowid })
-        } else {
-          console.log('Ничего не происходит')
-        }
       } else {
         this.$alert('У вас нету для этого прав')
       }
@@ -350,13 +341,11 @@ export default {
         this.gridOptions.api.resetRowHeights()
         const getWidth = params.columns
         if (params.finished === true) {
-          this.numStart = '0'
           for (const widy of getWidth) {
             const columnData = {
               catid: this.$route.params.catId,
               areaId: this.$route.params.areaId,
-              colid: widy.parent.groupId,
-              groid: [this.numStart++],
+              colid: widy.colDef.groupId,
               width: widy.actualWidth
             }
             this.$store.dispatch('updateColSize', columnData)

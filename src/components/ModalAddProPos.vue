@@ -61,7 +61,7 @@
             Выберите компонент (-ы) готового продукта
           </a>
           <p v-for="componts of allComponents" :key="componts.id">
-            {{componts.titlepos}}
+            {{componts.titlepos}} - {{componts.zeroNeed}}
           </p>
         </div>
         <div class="input-field">
@@ -82,6 +82,9 @@
         <div style="padding: 15px;">
           <div class="page-title" style="width: 100%;">
             <h3 style="text-align: center; width: 100%;">Выберите категорию склада</h3>
+            <div class="btn waves-effect waves-light" style="float: right;" @click.prevent="$modal.hide('add-comp')">
+              X
+            </div>
           </div>
           <table>
             <thead>
@@ -108,35 +111,29 @@
       </modal>
       <modal  name="add-compbyid" transition="nice-modal-fade"
               :min-width="200"
-              :min-height="200"
+              :min-height="300"
               :clickToClose="false"
               width="40%"
               height="auto">
         <div style="padding: 15px;">
           <div class="page-title" style="width: 100%;">
             <h3 style="text-align: center; width: 100%;">Выберите компонент</h3>
+            <div class="btn waves-effect waves-light" style="float: right;" @click.prevent="$modal.hide('add-compbyid')">
+              X
+            </div>
           </div>
-          <table>
-            <thead>
-            <tr>
-              <th>Название категории склада</th>
-              <th>Действие</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            <tr v-for="category of catbyIdTable" :key="category.id">
-              <td>{{category.titlepos}}</td>
-              <td>
-                <a
-                  class="btn-small btn work_menu"
-                  href="#" @click.prevent="addthiscomp(category)">
-                  Выбрать компонент
-                </a>
-              </td>
-            </tr>
-            </tbody>
-          </table>
+          <ul class="components">
+            <li v-for="category of catbyIdTable" :key="category.id + category.zeroNeed">
+              <a class="btn-small btn work_menu" style="width: 100%" href="#" @click="addthiscomp(category)">
+                {{category.titlepos}} ({{ category.zeroNeed }} - {{category.howleft}})
+              </a>
+            </li>
+            <li class="add-components">
+              <a class="btn-small btn work_menu" style="width: 100%" href="#" @click="addChoComp()">
+                Добавить компоненты
+              </a>
+            </li>
+          </ul>
         </div>
       </modal>
     </div>
@@ -182,35 +179,46 @@ export default {
       this.$modal.hide('add-postor')
     },
     async showaddcomp () {
+      this.allComponents = []
       this.$modal.show('add-comp')
     },
     async showcompbyid (id) {
       this.$modal.show('add-compbyid')
       this.catbyIdTable = await this.$store.dispatch('fetchStorageCategoryTableById', { id, areaId: this.$route.params.areaId })
     },
-    async addthiscomp (component) {
+    addChoComp () {
+      for (const choiceCom of this.catbyIdTable) {
+        if (choiceCom.zeroNeed > 0) {
+          this.allComponents.push(choiceCom)
+        }
+      }
       this.$modal.hide('add-compbyid')
       this.$modal.hide('add-comp')
-      this.allComponents.push(component)
+    },
+    addthiscomp (component) {
+      const idx = this.catbyIdTable.findIndex(c => c.id === component.id)
+      if (this.catbyIdTable[idx].zeroNeed < component.howleft) {
+        this.catbyIdTable[idx].zeroNeed++
+      }
     },
     async submitStorage () {
       if (this.$v.$invalid) {
         this.$v.$touch()
         return
       }
-      const compData = this.allComponents
-      const formData = {
-        comLength: compData.length,
-        strid: this.$route.params.proId,
-        areaId: this.$route.params.areaId,
-        titlepos: this.titlepos,
-        amount: this.amount,
-        articlepos: this.articlepos,
-        howhave: '1',
-        summPrice: this.amount,
-        salePrice: ''
-      }
       try {
+        const compData = this.allComponents
+        const formData = {
+          comLength: compData.length,
+          strid: this.$route.params.proId,
+          areaId: this.$route.params.areaId,
+          titlepos: this.titlepos,
+          amount: this.amount,
+          articlepos: this.articlepos,
+          howhave: '1',
+          summPrice: this.amount,
+          salePrice: ''
+        }
         const newPosPro = await this.$store.dispatch('createProductPosotionCategory', formData)
         for (const daco of compData) {
           await this.$store.dispatch('createProductCompCategory', {
@@ -219,8 +227,21 @@ export default {
             areaId: this.$route.params.areaId,
             articlepos: daco.articlepos,
             titlepos: daco.titlepos,
+            howNeed: daco.zeroNeed,
+            catStrId: daco.strId,
             compId: daco.id
           })
+          const takeHowLeft = {
+            id: daco.id,
+            strid: daco.strId,
+            areaId: this.$route.params.areaId,
+            titlepos: daco.titlepos,
+            unitstr: daco.unitstr,
+            choostatus: daco.choostatus,
+            articlepos: daco.articlepos,
+            howleft: daco.howleft - daco.zeroNeed
+          }
+          this.$store.dispatch('updateStoragePosotionCategory', takeHowLeft)
         }
         this.$modal.hide('add-postor')
         this.$message('Успешно добавлено')

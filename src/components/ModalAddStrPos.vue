@@ -79,7 +79,6 @@
             <option value="1">Готовый продукт</option>
             <option value="2">Компонент</option>
             <option value="3">Готовый продукт и компонент</option>
-            <option value="0">Без статуса</option>
           </select>
           <label for="choose_status">Определите статус</label>
           <span
@@ -150,20 +149,37 @@ export default {
         this.$v.$touch()
         return
       }
-      const formData = {
-        strid: this.$route.params.strId,
-        areaId: this.$route.params.areaId,
-        titlepos: this.titlepos,
-        unitstr: this.unitstr,
-        choostatus: this.choostatus,
-        articlepos: this.articlepos,
-        howleft: this.howleft
-      }
       try {
-        const newPosStr = await this.$store.dispatch('createStoragePosotionCategory', formData)
-        this.$modal.hide('add-postor')
-        this.$message('Успешно добавлено')
-        this.$emit('added', newPosStr)
+        if (this.choostatus === '2' || this.choostatus === '3') {
+          const formData = {
+            strid: this.$route.params.strId,
+            areaId: this.$route.params.areaId,
+            titlepos: this.titlepos,
+            unitstr: this.unitstr,
+            choostatus: this.choostatus,
+            articlepos: this.articlepos,
+            howleft: this.howleft
+          }
+          const newPosStr = await this.$store.dispatch('createStoragePosotionCategory', formData)
+          this.$modal.hide('add-postor')
+          this.$message('Успешно добавлено')
+          this.$emit('added', newPosStr)
+        } if (this.choostatus === '1' || this.choostatus === '3') {
+          const formData = {
+            comLength: 0,
+            strid: this.$route.params.proId,
+            areaId: this.$route.params.areaId,
+            titlepos: this.titlepos,
+            amount: 0,
+            articlepos: this.articlepos,
+            howhave: '1',
+            summPrice: 0,
+            salePrice: ''
+          }
+          await this.$store.dispatch('createProductPosotionCategory', formData)
+          this.$modal.hide('add-postor')
+          this.$message('Успешно добавлено')
+        }
       } catch (e) {
 
       }

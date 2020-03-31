@@ -1,6 +1,7 @@
 <template>
   <Loader v-if="loading" />
   <div class="instorage" v-else>
+    <Catbar :categories="categories" :rights="rights"/>
     <section>
       <router-link
         class="btn-small btn work_menu"
@@ -9,10 +10,6 @@
         Назад
       </router-link>
     </section>
-    <div class="page-title" style="width: 100%;">
-      <h3 style="text-align: center; width: 100%;">Готовая продукция Категория «{{productbyId.titlepro}}»
-      </h3>
-    </div>
     <a
       class="btn-small btn work_menu"
       style="float: left; margin-bottom: 10px;"
@@ -34,6 +31,7 @@
 <script>
 import ModalAddProPos from '../components/ModalAddProPos'
 import ProductTable from '../components/ProductTable'
+import Catbar from '../components/app/Catbar'
 export default {
   name: 'instorage',
   metaInfo: {
@@ -44,15 +42,18 @@ export default {
     productbyIdTable: [],
     categoryProduct: [],
     categoryStorage: [],
+    categories: [],
+    rights: [],
     loading: true
   }),
   async mounted () {
     const id = await this.$route.params.proId
     const areaId = await this.$route.params.areaId
-    const rights = await this.$store.dispatch('fetchRights', { areaId })
-    if (rights === 'Admin' || rights[0].storageAccept === 'mydvg1cool') {
+    this.categories = await this.$store.dispatch('fetchCategories', areaId)
+    this.rights = await this.$store.dispatch('fetchRights', { areaId })
+    if (this.rights === 'Admin' || this.rights[0].storageAccept === 'mydvg1cool') {
       this.productbyId = await this.$store.dispatch('fetchProductsCategoryById', { id, areaId })
-      this.productbyIdTable = await this.$store.dispatch('fetchProductsCategoryTableById', { id, areaId })
+      this.productbyIdTable = await this.$store.dispatch('fetchProductsCategoryTableById', { proCatId: id, areaId })
       this.categoryProduct = await this.$store.dispatch('fetchProductsCategory', areaId)
       this.categoryStorage = await this.$store.dispatch('fetchStorageCategory', { areaId })
     } else {
@@ -69,7 +70,7 @@ export default {
     }
   },
   components: {
-    ModalAddProPos, ProductTable
+    ModalAddProPos, ProductTable, Catbar
   }
 }
 </script>

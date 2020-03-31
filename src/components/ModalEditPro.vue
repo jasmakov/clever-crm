@@ -10,9 +10,9 @@
             id="name"
             type="text"
             v-model.trim="titlepos"
+            placeholder="Наименование"
             :class="{invalid: ($v.titlepos.$dirty && !$v.titlepos.required) || ($v.titlepos.$dirty && !$v.titlepos.minLength)}"
           >
-          <label for="name">Наименование</label>
           <small
             class="helper-text invalid"
             v-if="$v.titlepos.$dirty && !$v.titlepos.required"
@@ -27,9 +27,9 @@
             id="article"
             type="number"
             v-model.trim="articlepos"
+            placeholder="Артикул"
             :class="{invalid: ($v.articlepos.$dirty && !$v.articlepos.required) || ($v.articlepos.$dirty && !$v.articlepos.minLength)}"
           >
-          <label for="article">Артикул</label>
           <small
             class="helper-text invalid"
             v-if="$v.articlepos.$dirty && !$v.articlepos.required"
@@ -44,9 +44,9 @@
             id="amount"
             type="number"
             v-model.trim="amount"
+            placeholder="Цена продажи"
             :class="{invalid: ($v.amount.$dirty && !$v.amount.required) || ($v.amount.$dirty && !$v.amount.minLength)}"
           >
-          <label for="amount">Цена продажи</label>
           <small
             class="helper-text invalid"
             v-if="$v.amount.$dirty && !$v.amount.required"
@@ -78,8 +78,6 @@ export default {
     }
   },
   data: () => ({
-    select: null,
-    selectstatus: null,
     titlepos: '',
     amount: '',
     articlepos: ''
@@ -90,18 +88,9 @@ export default {
     articlepos: { numeric, required, minLength: minLength(1) }
   },
   mounted () {
-    // eslint-disable-next-line no-undef
-    M.updateTextFields()
-    // eslint-disable-next-line no-undef
-    this.select = M.FormSelect.init(this.$refs.select)
     this.titlepos = this.posbyId.titlepos
     this.amount = this.posbyId.amount
     this.articlepos = this.posbyId.articlepos
-  },
-  destroyed () {
-    if (this.select && this.select.destroy) {
-      this.select.destroy()
-    }
   },
   methods: {
     async hide_showeditpos () {
