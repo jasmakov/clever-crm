@@ -3,11 +3,13 @@
     <table>
       <thead>
       <tr>
-        <th></th>
+        <th>№</th>
         <th>Наименование</th>
         <th>Артикул</th>
         <th>Ед.изм.</th>
         <th>Остаток</th>
+        <th>Стоимость</th>
+        <th>Себестоимость</th>
         <th>Статус</th>
         <th>Действие</th>
       </tr>
@@ -20,10 +22,12 @@
         <td>{{catysId.articlepos}}</td>
         <td>{{catysId.unitstr}}</td>
         <td>{{catysId.howleft}}</td>
-        <td v-if="catysId.choostatus === '1'">Готовый продукт</td>
-        <td v-if="catysId.choostatus === '2'">Компонент</td>
-        <td v-if="catysId.choostatus === '3'">Готовый продукт и компонент</td>
-        <td v-if="catysId.choostatus === '0'">Без статуса</td>
+        <td>{{catysId.amount}} руб.</td>
+        <td>{{catysId.realamount}} руб.</td>
+        <td v-if="catysId.status === '1'">Готовый продукт</td>
+        <td v-if="catysId.status === '2'">Компонент</td>
+        <td v-if="catysId.status === '3'">Готовый продукт и компонент</td>
+        <td v-if="catysId.status === '4'">Многокомпонентный товар</td>
         <td>
           <a class='dropdown-trigger btn' href='#' :data-target='catysId.id'>Выбрать действие</a>
 

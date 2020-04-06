@@ -47,10 +47,6 @@
           v-else-if="$v.titlestr.$dirty && !$v.titlestr.minLength"
         >Введите еще {{$v.titlestr.$params.minLength.min - titlestr.length}} символов</small>
       </div>
-      <label>
-        <input type="checkbox" v-model="createSameName">
-        <span>Создать одноименную категорию в готовой продукции</span>
-      </label>
       <div class="input-field">
         <button class="btn waves-effect waves-light" type="submit">
           Добавить
@@ -77,8 +73,7 @@ export default {
     titlestr: '',
     categories: [],
     rights: [],
-    categoryStorage: [],
-    createSameName: ''
+    categoryStorage: []
   }),
   validations: {
     titlestr: { required, minLength: minLength(6) }
@@ -137,15 +132,8 @@ export default {
         areaId: this.$route.params.areaId,
         titlestr: this.titlestr
       }
-      const formDataForProd = {
-        areaId: this.$route.params.areaId,
-        titlepro: this.titlestr
-      }
       try {
         const storCateg = await this.$store.dispatch('createStorageCategory', formData)
-        if (this.createSameName === true) {
-          await this.$store.dispatch('createProductCategory', formDataForProd)
-        }
         this.$modal.hide('add-catstor')
         this.categoryStorage.push(storCateg)
         this.titlestr = ''

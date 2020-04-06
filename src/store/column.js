@@ -132,17 +132,17 @@ export default {
       }
     },
     // Редактирование размер столбцов
-    async updateColSize ({ commit, dispatch }, { catid, areaId, colid, width }) {
+    async updateColSize ({ commit, dispatch }, { catid, areaId, colid, groid, width }) {
       try {
         const uid = await dispatch('getUid')
         const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
         const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
         if (takeId.length) {
           for (const inviter of takeId) {
-            await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/categories/${catid}/columnDefs/${colid}`).update({ width })
+            await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/categories/${catid}/columnDefs/${colid}/children/${groid}`).update({ width })
           }
         } else {
-          await firebase.database().ref(`/users/${uid}/workareas/${areaId}/categories/${catid}/columnDefs/${colid}`).update({ width })
+          await firebase.database().ref(`/users/${uid}/workareas/${areaId}/categories/${catid}/columnDefs/${colid}/children/${groid}`).update({ width })
         }
       } catch (e) {
         commit('setError', e)

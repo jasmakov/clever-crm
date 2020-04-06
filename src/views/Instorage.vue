@@ -2,17 +2,15 @@
   <Loader v-if="loading" />
   <div class="instorage" v-else>
     <Catbar :categories="categories" :rights="rights"/>
-    <section>
-      <router-link
-        class="btn-small btn work_menu"
-        style="float: left"
-        :to="'/' + $route.params.areaId + '/storage'">
-        Назад
-      </router-link>
-    </section>
     <div class="page-title" style="width: 100%;">
       <h3 style="text-align: center; width: 100%;">Внутренний склад - {{catbyId.titlestr}}</h3>
     </div>
+    <router-link
+      class="btn-small btn work_menu"
+      style="float: left"
+      :to="'/' + $route.params.areaId + '/storage'">
+      Назад
+    </router-link>
     <a
       class="btn-small btn work_menu"
       style="float: left; margin-bottom: 10px;"
@@ -26,7 +24,7 @@
             :clickToClose="false"
             width="40%"
             height="auto">
-      <ModalAddStrPos @added="addPosition"/>
+      <ModalAddStrPos @added="addPosition" :catbyIdTable="catbyIdTable"/>
     </modal>
   </div>
 </template>

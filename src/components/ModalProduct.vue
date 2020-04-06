@@ -92,14 +92,16 @@ export default {
   }),
   async mounted () {
     const areaId = this.$route.params.areaId
-    const ProductCategory = await this.$store.dispatch('fetchProductsCategory', areaId)
+    const ProductCategory = await this.$store.dispatch('fetchStorageCategory', { areaId })
     for (const prodForAdd of ProductCategory) {
       const proCatId = prodForAdd.id
-      this.allProduct = await this.$store.dispatch('fetchProductsCategoryTableById', { proCatId, areaId })
+      this.allProduct = await this.$store.dispatch('fetchStorageCategoryTableById', { id: proCatId, areaId })
       const rowId = this.rowIdforProd
       this.addProduct = await this.$store.dispatch('fetchProductsForModule', { proCatId, areaId, rowId })
       for (const prody of this.allProduct) {
-        this.productObj.push(prody)
+        if (prody.status !== '2') {
+          this.productObj.push(prody)
+        }
       }
     }
     this.items = this.addProduct

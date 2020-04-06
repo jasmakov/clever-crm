@@ -369,3 +369,10 @@ table, th, td {
     margin-top: 35px;
     font-weight: bold;
 }
+.choice_compstatus {
+    text-align: center;
+}
+.choice_compstatus li a{
+    width: 70%;
+    margin-bottom: 10px;
+}

@@ -17,9 +17,6 @@
           <router-link v-if="checkStrSta.status === '1'" tag="li" class="btn-small btn work_menu" active-class="active" :to="'/' + $route.params.areaId + '/storage'">
             <a href="#" class="waves-effect waves-light" style="color: #fff;">Склад</a>
           </router-link>
-          <router-link v-if="checkStrSta.status === '1'" tag="li" class="btn-small btn work_menu" active-class="active" :to="'/' + $route.params.areaId + '/products'">
-            <a href="#" class="waves-effect waves-light" style="color: #fff;">Продукция</a>
-          </router-link>
           <li class="btn-small btn" v-if="rights === 'Admin' || rights[0].createCategor === 'mydvg1cool'" @click.prevent="show_cat"><a href="#" class="waves-effect waves-light" v-tooltip="'Добавить категорию'" style="padding: 6px;"><eva-icon name="plus" animation="pulse" fill="white"></eva-icon></a></li>
         </draggable>
       </ul>

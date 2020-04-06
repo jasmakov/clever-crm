@@ -93,11 +93,19 @@ export default {
             status: 7
           })
           const getColbyId = {
-            field: 'numIdx',
-            headerName: '№',
-            width: 100,
-            editable: false,
-            lockPosition: true
+            children: [
+              {
+                field: 'numIdx',
+                headerName: '',
+                width: 100,
+                resizable: false,
+                cellRenderer: 'agGroupCellRenderer',
+                cellRendererParams: { checkbox: true },
+                editable: false,
+                lockPosition: true
+              }
+            ],
+            headerName: '№'
           }
           await this.$store.dispatch('addNum', { areaId: this.$route.params.areaId, catId: category.id, getColbyId })
           this.$v.$reset()

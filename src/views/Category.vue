@@ -341,16 +341,17 @@ export default {
         this.gridOptions.api.resetRowHeights()
         const getWidth = params.columns
         if (params.finished === true) {
+          this.numStart = '0'
           for (const widy of getWidth) {
             const columnData = {
               catid: this.$route.params.catId,
               areaId: this.$route.params.areaId,
-              colid: widy.colDef.groupId,
+              colid: widy.parent.groupId,
+              groid: [this.numStart++],
               width: widy.actualWidth
             }
             this.$store.dispatch('updateColSize', columnData)
           }
-          this.$message('Размер колонок успешно изменен')
         }
       } else {
         this.$message('У вас нету для этого прав')
