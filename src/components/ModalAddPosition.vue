@@ -28,7 +28,7 @@
       <input
         id="article"
         type="number"
-        v-model.trim="articlepos"
+        v-model.number.trim="articlepos"
         :class="{invalid: ($v.articlepos.$dirty && !$v.articlepos.required) || ($v.articlepos.$dirty && !$v.articlepos.minLength)}"
       >
       <label for="article">Артикул</label>
@@ -41,11 +41,11 @@
         v-else-if="$v.articlepos.$dirty && !$v.articlepos.minLength"
       >Введите еще {{$v.articlepos.$params.minLength.min - articlepos.length}} символов</small>
     </div>
-    <div class="input-field" v-if="status !== '4'">
+    <div class="input-field">
       <input
         id="howleft"
         type="number"
-        v-model.trim="howleft"
+        v-model.number.trim="howleft"
         :class="{invalid: ($v.howleft.$dirty && !$v.howleft.required) || ($v.howleft.$dirty && !$v.howleft.minLength)}"
       >
       <label for="howleft">Остаток на текущий момент</label>
@@ -58,7 +58,7 @@
         v-else-if="$v.howleft.$dirty && !$v.howleft.minLength"
       >Введите еще {{$v.howleft.$params.minLength.min - howleft.length}} символов</small>
     </div>
-    <div class="input-field" v-if="status !== '4'">
+    <div class="input-field">
       <select ref="select" v-model="unitstr" id="unit">
         <option value="Шт">Шт</option>
         <option value="М">Метр</option>
@@ -80,7 +80,7 @@
       <input
         id="amount"
         type="number"
-        v-model.trim="amount"
+        v-model.number.trim="amount"
         :class="{invalid: ($v.amount.$dirty && !$v.amount.required) || ($v.amount.$dirty && !$v.amount.minLength)}"
       >
       <label for="amount">Цена продажи</label>
@@ -97,7 +97,7 @@
       <input
         id="realamount"
         type="number"
-        v-model.trim="realamount"
+        v-model.number.trim="realamount"
         :class="{invalid: ($v.realamount.$dirty && !$v.realamount.required) || ($v.realamount.$dirty && !$v.realamount.minLength)}"
       >
       <label for="realamount">Себестоимость</label>
@@ -175,12 +175,13 @@ export default {
     allComponents: [],
     realamountAllComp: [],
     titlepos: '',
-    articlepos: '',
+    articlepos: null,
+    realSummRa: null,
     unitstr: 'Шт',
     choostatus: '',
-    realamount: '',
-    amount: '',
-    howleft: ''
+    realamount: null,
+    amount: null,
+    howleft: null
   }),
   validations: {
     titlepos: { required, minLength: minLength(2) },
@@ -216,6 +217,7 @@ export default {
             idpos: choiceCom.id,
             titlepos: choiceCom.titlepos,
             realamount: choiceCom.realamount,
+            howleft: choiceCom.howleft,
             zeroNeed: choiceCom.zeroNeed,
             unitstr: choiceCom.unitstr
           }
@@ -243,7 +245,7 @@ export default {
         }
       }
       if (this.status === '4') {
-        if (this.$v.titlepos.$invalid && this.$v.articlepos.$invalid && this.$v.amount.$invalid) {
+        if (this.$v.titlepos.$invalid && this.$v.articlepos.$invalid && this.$v.amount.$invalid && this.$v.howleft.$invalid && this.$v.unitstr.$invalid) {
           this.$v.$touch()
           return
         }
@@ -259,16 +261,22 @@ export default {
           components: this.status === '4' ? this.allComponents : '',
           amount: this.status === '2' ? '' : this.amount,
           realamount: this.status === '4' ? this.realSummRa : this.realamount,
-          howleft: this.howleft === '4' ? '' : this.howleft,
+          howleft: this.howleft === '4' ? null : this.howleft,
           unitstr: this.unitstr === '4' ? '' : this.unitstr,
           status: this.status,
           summPrice: 0,
           salePrice: ''
         }
-        await this.$store.dispatch('createPosotionStorage', formData)
+        const newposition = await this.$store.dispatch('createPosotionStorage', formData)
         this.$modal.hide('add-position')
         this.$modal.hide('add-postor')
-        this.$emit('added', formData)
+        this.$emit('added', newposition)
+        if (this.status === '4') {
+          for (const comp of this.allComponents) {
+            const howleft = comp.howleft - comp.zeroNeed * this.howleft
+            this.$store.dispatch('insertCompInProduct', { areaId: this.$route.params.areaId, id: comp.idpos, howleft: howleft })
+          }
+        }
         this.$message('Успешно добавлено')
       } catch (e) {
 

@@ -8,6 +8,7 @@
             <option value="Работа с клиентами" :class="{invalid: $v.title.$dirty && !$v.title.required}">Работа с клиентами
             </option>
             <option value="1" v-if="!checkStrSta.length">Склад</option>
+            <option value="p1" v-if="!checkProdSta.length">Производство</option>
           </select>
           <label for="name">Выберите категорию</label>
           <span
@@ -32,6 +33,9 @@ import { required } from 'vuelidate/lib/validators'
 export default {
   props: {
     checkStrSta: {
+      required: true
+    },
+    checkProdSta: {
       required: true
     }
   },
@@ -78,6 +82,18 @@ export default {
           }
           this.$emit('created', category)
           this.$message('Вы создали склад')
+        }
+        if (this.title === 'p1') {
+          await this.$store.dispatch('addProductionForProduct', {
+            areaId: await this.$route.params.areaId,
+            status: this.title
+          })
+          const category = {
+            title: 'Производство',
+            id: 'production'
+          }
+          this.$emit('created', category)
+          this.$message('Вы создали производство')
         }
         if (this.title === 'Работа с клиентами') {
           const category = await this.$store.dispatch('createCategory', {

@@ -30,22 +30,22 @@ const routes = [
     component: () => import('../views/Enter.vue')
   },
   {
+    path: '/:areaId/move-table',
+    name: 'move-table',
+    meta: { layout: 'main', auth: true },
+    component: () => import('../views/MoveTable.vue')
+  },
+  {
     path: '/:areaId/storage',
     name: 'storage',
     meta: { layout: 'main', auth: true },
     component: () => import('../views/Storage.vue')
   },
   {
-    path: '/:areaId/product/:proId',
-    name: 'product',
+    path: '/:areaId/production',
+    name: 'production',
     meta: { layout: 'main', auth: true },
-    component: () => import('../views/Inproduct.vue')
-  },
-  {
-    path: '/:areaId/products',
-    name: 'products',
-    meta: { layout: 'main', auth: true },
-    component: () => import('../views/Products.vue')
+    component: () => import('../views/Production.vue')
   },
   {
     path: '/:areaId/:catId',

@@ -17,6 +17,9 @@
           <router-link v-if="checkStrSta.status === '1'" tag="li" class="btn-small btn work_menu" active-class="active" :to="'/' + $route.params.areaId + '/storage'">
             <a href="#" class="waves-effect waves-light" style="color: #fff;">Склад</a>
           </router-link>
+          <router-link v-if="checkProdSta.status === 'p1'" tag="li" class="btn-small btn work_menu" active-class="active" :to="'/' + $route.params.areaId + '/production'">
+            <a href="#" class="waves-effect waves-light" style="color: #fff;">Производство</a>
+          </router-link>
           <li class="btn-small btn" v-if="rights === 'Admin' || rights[0].createCategor === 'mydvg1cool'" @click.prevent="show_cat"><a href="#" class="waves-effect waves-light" v-tooltip="'Добавить категорию'" style="padding: 6px;"><eva-icon name="plus" animation="pulse" fill="white"></eva-icon></a></li>
         </draggable>
       </ul>
@@ -27,7 +30,7 @@
             :clickToClose="false"
             width="20%"
             height="auto">
-      <ModalCat :checkStrSta="checkStrSta" @created="addNewCategory" />
+      <ModalCat :checkStrSta="checkStrSta" :checkProdSta="checkProdSta" @created="addNewCategory" />
     </modal>
   </div>
 </template>
@@ -46,11 +49,13 @@ export default {
     }
   },
   data: () => ({
-    checkStrSta: ''
+    checkStrSta: '',
+    checkProdSta: ''
   }),
   async mounted () {
     const areaId = this.$route.params.areaId
     this.checkStrSta = await this.$store.dispatch('fetchStorageStatus', { areaId })
+    this.checkProdSta = await this.$store.dispatch('fetchProductionStatus', { areaId })
   },
   methods: {
     onEnd (draggedContext) {

@@ -3,6 +3,8 @@
 <div v-else>
   <Catbar :categories="categories" :rights="rights"/>
   <section>
+    <StorBar/>
+    <h4 style="text-align: center; width: 100%;">Ваши товары и комплектуюшие</h4>
     <ul>
         <router-link
           v-for="catstr in categoryStorage"
@@ -63,6 +65,7 @@
 <script>
 import { required, minLength } from 'vuelidate/lib/validators'
 import Catbar from '../components/app/Catbar'
+import StorBar from '../components/app/StorBar'
 export default {
   name: 'storage',
   metaInfo: {
@@ -90,6 +93,7 @@ export default {
     }
   },
   components: {
+    StorBar,
     Catbar
   },
   methods: {

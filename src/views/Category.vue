@@ -44,7 +44,7 @@
               :clickToClose="false"
               width="80%"
               height="auto">
-        <ModalProduct :rowIdforProd="rowIdforProd" @moduled="updateModule"/>
+        <ModalProduct :rowIdforProd="rowIdforProd" :statusForProd="statusForProd" @moduled="updateModule"/>
       </modal>
       <modal  name="edit-status" transition="nice-modal-fade"
               :min-width="200"
@@ -65,6 +65,7 @@ import ModalCol from '../components/ModalCol'
 import Catbar from '../components/app/Catbar'
 import ModalProduct from '../components/ModalProduct'
 import ModalStatus from '../components/ModalStatus'
+import reject from 'lodash/reject'
 
 export default {
   name: 'category',
@@ -92,6 +93,7 @@ export default {
       loading: true,
       loadingtable: true,
       rowIdforProd: '',
+      statusForProd: '',
       isHide: false,
       modules: AllCommunityModules,
       updateCount: 0
@@ -130,12 +132,15 @@ export default {
             nameMod: reco.nameMod,
             phoneNumberC: reco.phoneNumberC,
             priceMod: reco.priceMod,
+            statusMod: reco.statusMod === '0' ? 'Не отгружано' : reco.statusMod === '1' ? 'Отгружано' : reco.statusMod === '2' ? 'Забронировано' : '',
+            statusForProduct: reco.statusMod,
             tkClient: reco.tkClient,
             status: reco.status === '0' ? 'Выбрать статус' : reco.status === '1' ? 'В работе' : reco.status === '2' ? 'Думают' : reco.status === '3' ? 'Собран' : reco.status === '4' ? 'Выставлен счет' : reco.status === '5' ? 'Оплачен' : reco.status === '6' ? 'Отгружен' : reco.status === '7' ? 'Возврат' : reco.status === '8' ? 'Отменен' : '',
             id: reco.id
           }
           this.newrecord.push(allrecord)
         }
+        this.newrecord.reverse()
         this.rowClassRules = {
           'status_work': params => {
             const numSickDays = params.data.status
@@ -232,10 +237,10 @@ export default {
       const takerecord = await this.$store.dispatch('createEmptyRow', emptyRowData)
       takerecord.status = takerecord.status === '0' ? 'Выбрать статус' : ''
       const Idx = {
-        numIdx: this.records.length + 1
+        numIdx: this.newrecord.length + 1
       }
       const emptyValue = { ...takerecord, ...Idx }
-      this.newrecord.push(emptyValue)
+      this.newrecord.unshift(emptyValue)
     },
     deleteRow () {
       this.loadingtable = true
@@ -247,7 +252,7 @@ export default {
             const areaId = this.$route.params.areaId
             const rowid = deleteItem.id
             this.$store.dispatch('deleteRecord', { id, areaId, rowid })
-            this.newrecord.splice(deleteItem.numIdx - 1, 1)
+            this.newrecord = reject(this.newrecord, deleteItem)
           }
           let idNum = 1
           for (const reco of this.newrecord) {
@@ -279,6 +284,7 @@ export default {
       this.newrecord[idx].nameMod = module.nameMod
       this.newrecord[idx].muchMod = module.muchMod
       this.newrecord[idx].priceMod = module.priceMod
+      this.newrecord[idx].statusMod = module.statusMod === '0' ? 'Не отгружано' : module.statusMod === '1' ? 'Отгружано' : module.statusMod === '2' ? 'Забронировано' : ''
       this.updateCount++
     },
     updateStatus (module) {
@@ -303,7 +309,8 @@ export default {
       const rights = await this.$store.dispatch('fetchRights', { areaId })
       if (rights === 'Admin' || rights[0].rights[id].writeCaty === 'mydvg1cool') {
         this.rowIdforProd = params.data.id
-        if (params.colDef.field === 'nameMod' || params.colDef.field === 'muchMod' || params.colDef.field === 'priceMod') {
+        this.statusForProd = params.data.statusForProduct
+        if (params.colDef.field === 'nameMod' || params.colDef.field === 'muchMod' || params.colDef.field === 'priceMod' || params.colDef.field === 'statusMod') {
           this.$modal.show('edit-module')
         }
         if (params.colDef.field === 'status') {
@@ -341,13 +348,12 @@ export default {
         this.gridOptions.api.resetRowHeights()
         const getWidth = params.columns
         if (params.finished === true) {
-          this.numStart = '0'
           for (const widy of getWidth) {
             const columnData = {
               catid: this.$route.params.catId,
               areaId: this.$route.params.areaId,
               colid: widy.parent.groupId,
-              groid: [this.numStart++],
+              groid: widy.colDef.field === 'muchMod' ? [1] : widy.colDef.field === 'priceMod' ? [2] : widy.colDef.field === 'priceMod' ? [4] : [0],
               width: widy.actualWidth
             }
             this.$store.dispatch('updateColSize', columnData)

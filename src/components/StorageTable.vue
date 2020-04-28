@@ -22,7 +22,8 @@
         <td>{{catysId.articlepos}}</td>
         <td>{{catysId.unitstr}}</td>
         <td>{{catysId.howleft}}</td>
-        <td>{{catysId.amount}} руб.</td>
+        <td v-if="catysId.status !== '2'">{{catysId.amount}} руб.</td>
+        <td class="dontHave" v-else></td>
         <td>{{catysId.realamount}} руб.</td>
         <td v-if="catysId.status === '1'">Готовый продукт</td>
         <td v-if="catysId.status === '2'">Компонент</td>
@@ -30,12 +31,11 @@
         <td v-if="catysId.status === '4'">Многокомпонентный товар</td>
         <td>
           <a class='dropdown-trigger btn' href='#' :data-target='catysId.id'>Выбрать действие</a>
-
           <!-- Dropdown Structure -->
           <ul :id='catysId.id' class='dropdown-content'>
             <li><a href="#!" @click.prevent="showeditpos(catysId.id)">Редактировать</a></li>
             <li><a href="#!" @click.prevent="showchangecat(catysId)">Перенести</a></li>
-            <li><a href="#!" @click="deletePosition(catysId.id, catysId.titlepos)" >Удалить</a></li>
+            <li><a href="#!" @click="deletePosition(catysId)" >Удалить</a></li>
           </ul>
         </td>
       </tr>
@@ -47,7 +47,7 @@
             :clickToClose="false"
             width="40%"
             height="auto">
-      <ModalEditPos :posbyId="posbyId" @edited="editPosition"/>
+      <ModalEditPos :posbyId="posbyId" :catbyIdTable="catbyIdTable" @edited="editPosition"/>
     </modal>
     <modal  name="copy-postor" transition="nice-modal-fade"
             :min-width="200"
@@ -87,6 +87,7 @@
 </template>
 <script>
 import ModalEditPos from '../components/ModalEditPos'
+import reject from 'lodash/reject'
 export default {
   name: 'storagetable',
   props: {
@@ -112,13 +113,13 @@ export default {
     })
   },
   methods: {
-    async deletePosition (id, title) {
-      this.$confirm('Вы уверены что хотите удалить ' + title + '?').then(() => {
+    async deletePosition (option) {
+      this.$confirm('Вы уверены что хотите удалить ' + option.titlepos + '?').then(() => {
         const strId = this.$route.params.strId
-        this.$store.dispatch('deleteStoragePosition', { id, strId, areaId: this.$route.params.areaId })
-        this.catbyIdTable.pop(id)
+        this.$store.dispatch('deleteStoragePosition', { id: option.id, strId, areaId: this.$route.params.areaId })
+        this.catbyIdTable = reject(this.catbyIdTable, option)
         this.$fire({
-          title: title + ' - удален',
+          title: option.titlepos + ' - удален',
           type: 'success',
           timer: 3000
         })
@@ -126,20 +127,9 @@ export default {
     },
     changeCategory (catId, title, lastPos) {
       this.$confirm('Вы уверены что хотите переместить "' + lastPos.titlepos + '" в "' + title + '" ?').then(() => {
-        const newCatForPos = {
-          strid: catId,
-          areaId: this.$route.params.areaId,
-          titlepos: lastPos.titlepos,
-          unitstr: lastPos.unitstr,
-          choostatus: lastPos.choostatus,
-          articlepos: lastPos.articlepos,
-          howleft: lastPos.howleft
-        }
-        this.$store.dispatch('createStoragePosotionCategory', newCatForPos)
-        const strId = this.$route.params.strId
         const id = lastPos.id
-        this.$store.dispatch('deleteStoragePosition', { id, strId, areaId: this.$route.params.areaId })
-        this.catbyIdTable.pop(lastPos.id)
+        this.$store.dispatch('changePosCategory', { id, areaId: this.$route.params.areaId, strid: catId })
+        this.catbyIdTable = reject(this.catbyIdTable, lastPos)
         this.$fire({
           title: lastPos.titlepos + ' успешно перемещена в ' + title,
           type: 'success',
@@ -161,6 +151,8 @@ export default {
       const idx = this.catbyIdTable.findIndex(c => c.id === editposition.id)
       this.catbyIdTable[idx].titlepos = editposition.titlepos
       this.catbyIdTable[idx].unitstr = editposition.unitstr
+      this.catbyIdTable[idx].amount = editposition.amount
+      this.catbyIdTable[idx].realamount = editposition.realamount
       this.catbyIdTable[idx].choostatus = editposition.choostatus
       this.catbyIdTable[idx].articlepos = editposition.articlepos
       this.catbyIdTable[idx].howleft = editposition.howleft

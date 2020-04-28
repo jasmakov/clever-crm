@@ -19,6 +19,12 @@ table, th, td {
 {
     width: 500px;
 }
+.dontHave {
+    background: #5f5d5b;
+}
+.ui.search.dropdown>.text {
+  top: 8px;
+}
 .auth-submit
 {
     width: 100%;
@@ -295,9 +301,6 @@ table, th, td {
     padding: 12px;
     float: left;
 }
-.instorage .v--modal-overlay .v--modal-box {
-    overflow: inherit!important;
-}
 .ag-header-group-cell-with-group {
 
 }
@@ -314,6 +317,7 @@ table, th, td {
 }
 .v--modal-overlay .v--modal-box {
     max-height: 600px!important;
+    overflow-y: auto!important;
 }
 .page-subtitle h4, .page-title {
     margin-bottom: 1rem;

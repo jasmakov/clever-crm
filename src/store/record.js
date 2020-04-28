@@ -91,7 +91,7 @@ export default {
         throw e
       }
     },
-    async updateModule ({ commit, dispatch }, { rowid, catid, areaId, nameMod, muchMod, priceMod }) {
+    async updateModule ({ commit, dispatch }, { rowid, catid, areaId, nameMod, muchMod, priceMod, statusMod }) {
       try {
         const uid = await dispatch('getUid')
         const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
@@ -101,14 +101,16 @@ export default {
             await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/categories/${catid}/rowDefs/`).child(rowid).update({
               nameMod,
               muchMod,
-              priceMod
+              priceMod,
+              statusMod
             })
           }
         } else {
           await firebase.database().ref(`/users/${uid}/workareas/${areaId}/categories/${catid}/rowDefs/`).child(rowid).update({
             nameMod,
             muchMod,
-            priceMod
+            priceMod,
+            statusMod
           })
         }
       } catch (e) {
