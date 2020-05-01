@@ -21,7 +21,7 @@ export default {
         throw e
       }
     },
-    async createPosotionStorage ({ commit, dispatch }, { strid, areaId, titlepos, amount, articlepos, components, realamount, comLength, zeroNeed, howleft, unitstr, status, summPrice, salePrice }) {
+    async createPosotionStorage ({ commit, dispatch }, { strid, areaId, titlepos, amount, articlepos, realamount, comLength, zeroNeed, howleft, unitstr, status, summPrice, salePrice }) {
       try {
         const uid = await dispatch('getUid')
         const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
@@ -33,7 +33,6 @@ export default {
               amount,
               realamount,
               articlepos,
-              components,
               zeroNeed,
               comLength,
               howleft,
@@ -43,7 +42,7 @@ export default {
               salePrice,
               strid
             })
-            return { titlepos, amount, realamount, articlepos, components, comLength, zeroNeed, howleft, unitstr, status, summPrice, salePrice, strid, id: categoryposstr.key }
+            return { titlepos, amount, realamount, articlepos, comLength, zeroNeed, howleft, unitstr, status, summPrice, salePrice, strid, id: categoryposstr.key }
           }
         } else {
           const categoryposstr = await firebase.database().ref(`/users/${uid}/workareas/${areaId}/storage/position`).push({
@@ -51,7 +50,6 @@ export default {
             amount,
             realamount,
             articlepos,
-            components,
             comLength,
             zeroNeed,
             howleft,
@@ -61,7 +59,26 @@ export default {
             salePrice,
             strid
           })
-          return { titlepos, amount, realamount, articlepos, components, comLength, zeroNeed, howleft, unitstr, status, summPrice, salePrice, strid, id: categoryposstr.key }
+          return { titlepos, amount, realamount, articlepos, comLength, zeroNeed, howleft, unitstr, status, summPrice, salePrice, strid, id: categoryposstr.key }
+        }
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
+    async addComponentsForMany ({ commit, dispatch }, { areaId, howleft, idpos, realamount, titlepos, zeroNeed, idmany }) {
+      try {
+        const uid = await dispatch('getUid')
+        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
+        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
+        if (takeId.length) {
+          for (const inviter of takeId) {
+            const categoryposstr = await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/storage/components`).push({ howleft, idpos, realamount, titlepos, zeroNeed, idmany })
+            return { howleft, idpos, realamount, titlepos, zeroNeed, idmany, id: categoryposstr.key }
+          }
+        } else {
+          const categoryposstr = await firebase.database().ref(`/users/${uid}/workareas/${areaId}/storage/components`).push({ howleft, idpos, realamount, titlepos, zeroNeed, idmany })
+          return { howleft, idpos, realamount, titlepos, zeroNeed, idmany, id: categoryposstr.key }
         }
       } catch (e) {
         commit('setError', e)
@@ -119,6 +136,84 @@ export default {
           }
         } else {
           const categoriestr = (await firebase.database().ref(`/users/${uid}/workareas/${areaId}/storage/moveTable`).once('value')).val() || {}
+          return Object.keys(categoriestr).map(key => ({ ...categoriestr[key], id: key }))
+        }
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
+    async fetchComponentsForMany ({ commit, dispatch }, { areaId }) {
+      try {
+        const uid = await dispatch('getUid')
+        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
+        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
+        if (takeId.length) {
+          for (const inviter of takeId) {
+            const categoriestr = (await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/storage/components`).once('value')).val() || {}
+            return Object.keys(categoriestr).map(key => ({ ...categoriestr[key], id: key }))
+          }
+        } else {
+          const categoriestr = (await firebase.database().ref(`/users/${uid}/workareas/${areaId}/storage/components`).once('value')).val() || {}
+          return Object.keys(categoriestr).map(key => ({ ...categoriestr[key], id: key }))
+        }
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
+    async deleteCompFromManyEdit ({ commit, dispatch }, { id, areaId }) {
+      try {
+        const uid = await dispatch('getUid')
+        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
+        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
+        if (takeId.length) {
+          for (const inviter of takeId) {
+            const currentRef = await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/storage/components/${id}`)
+            currentRef.remove()
+          }
+        } else {
+          const currentRef = await firebase.database().ref(`/users/${uid}/workareas/${areaId}/storage/components/${id}`)
+          currentRef.remove()
+        }
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
+    async updateCompForMany ({ commit, dispatch }, { id, areaId, zeroNeed }) {
+      try {
+        const uid = await dispatch('getUid')
+        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
+        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
+        if (takeId.length) {
+          for (const inviter of takeId) {
+            await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/storage/components`).child(id).update({
+              zeroNeed
+            })
+          }
+        } else {
+          await firebase.database().ref(`/users/${uid}/workareas/${areaId}/storage/components`).child(id).update({
+            zeroNeed
+          })
+        }
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
+    async fetchComponentsForManyOne ({ commit, dispatch }, { posid, areaId }) {
+      try {
+        const uid = await dispatch('getUid')
+        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
+        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
+        if (takeId.length) {
+          for (const inviter of takeId) {
+            const categoriestr = (await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/storage/components`).orderByChild('idmany').equalTo(posid).once('value')).val() || {}
+            return Object.keys(categoriestr).map(key => ({ ...categoriestr[key], id: key }))
+          }
+        } else {
+          const categoriestr = (await firebase.database().ref(`/users/${uid}/workareas/${areaId}/storage/components`).orderByChild('idmany').equalTo(posid).once('value')).val() || {}
           return Object.keys(categoriestr).map(key => ({ ...categoriestr[key], id: key }))
         }
       } catch (e) {
@@ -471,6 +566,29 @@ export default {
         } else {
           const currentPos = await firebase.database().ref(`/users/${uid}/workareas/${areaId}/storage/position/${id}`)
           currentPos.remove()
+        }
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
+    async deletePosFromMany ({ commit, dispatch }, { id, areaId }) {
+      try {
+        const uid = await dispatch('getUid')
+        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
+        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
+        if (takeId.length) {
+          for (const inviter of takeId) {
+            const currentPos = await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/storage/components`)
+            currentPos.orderByChild('idpos').equalTo(id).on('child_added', (snapshot) => {
+              snapshot.ref.remove()
+            })
+          }
+        } else {
+          const currentPos = await firebase.database().ref(`/users/${uid}/workareas/${areaId}/storage/components`)
+          currentPos.orderByChild('idpos').equalTo(id).on('child_added', (snapshot) => {
+            snapshot.ref.remove()
+          })
         }
       } catch (e) {
         commit('setError', e)

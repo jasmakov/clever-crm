@@ -47,7 +47,7 @@
             :clickToClose="false"
             width="40%"
             height="auto">
-      <ModalEditPos :posbyId="posbyId" :catbyIdTable="catbyIdTable" @edited="editPosition"/>
+      <ModalEditPos :posbyId="posbyId" :compForMany="compForMany" :catbyIdTable="catbyIdTable" @edited="editPosition"/>
     </modal>
     <modal  name="copy-postor" transition="nice-modal-fade"
             :min-width="200"
@@ -71,7 +71,7 @@
           </thead>
 
           <tbody>
-          <tr v-for="categorys of categoryStorage" :key="categorys.id">
+          <tr v-for="categorys of getCatForChange" :key="categorys.id">
             <td>{{categorys.titlestr}}</td>
             <td>
               <a href="#" class="btn waves-effect waves-light" style="color: #fff;" @click="changeCategory(categorys.id, categorys.titlestr, nextPos)">
@@ -102,6 +102,7 @@ export default {
   },
   data: () => ({
     dropdown: null,
+    compForMany: [],
     posbyId: '',
     nextPos: ''
   }),
@@ -112,11 +113,18 @@ export default {
       constrainWidth: false
     })
   },
+  computed: {
+    getCatForChange: function () {
+      return this.categoryStorage.filter(i => i.id !== this.$route.params.strId)
+    }
+  },
   methods: {
     async deletePosition (option) {
       this.$confirm('Вы уверены что хотите удалить ' + option.titlepos + '?').then(() => {
-        const strId = this.$route.params.strId
-        this.$store.dispatch('deleteStoragePosition', { id: option.id, strId, areaId: this.$route.params.areaId })
+        this.$store.dispatch('deleteStoragePosition', { id: option.id, areaId: this.$route.params.areaId })
+        if (option.status === '2') {
+          this.$store.dispatch('deletePosFromMany', { id: option.id, areaId: this.$route.params.areaId })
+        }
         this.catbyIdTable = reject(this.catbyIdTable, option)
         this.$fire({
           title: option.titlepos + ' - удален',
@@ -139,8 +147,8 @@ export default {
       })
     },
     async showeditpos (posid) {
-      const id = this.$route.params.strId
-      this.posbyId = await this.$store.dispatch('fetchStoragePositionById', { id, posid, areaId: this.$route.params.areaId })
+      this.posbyId = await this.$store.dispatch('fetchStoragePositionById', { posid, areaId: this.$route.params.areaId })
+      this.compForMany = await this.$store.dispatch('fetchComponentsForManyOne', { posid, areaId: this.$route.params.areaId })
       this.$modal.show('edit-postor')
     },
     async showchangecat (posOne) {

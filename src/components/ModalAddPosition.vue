@@ -142,10 +142,12 @@
         </div>
       </div>
       <ul class="components">
-        <li v-for="category of catbyIdTable" :key="category.id + category.zeroNeed">
-          <a v-if="category.status === '2' || category.status === '3'" class="btn-small btn work_menu" style="width: 100%" href="#" @click="addthiscomp(category)">
-            {{category.titlepos}} ({{ category.zeroNeed }} - {{category.howleft}})
-          </a>
+        <li v-for="category of getCatForChange" :key="category.id + category.zeroNeed">
+          <div class="btn-small btn work_menu" style="width: 100%">
+          <a href="#" @click="delthiscomp(category)" class="waves-effect waves-light" v-tooltip="'-1 компонент'" style="float: left;"><eva-icon style="padding-top: 5px;" name="minus" animation="pulse" fill="white"></eva-icon></a>
+          {{category.titlepos}} ({{ category.zeroNeed }} - {{category.howleft}})
+          <a href="#" @click="addthiscomp(category)" class="waves-effect waves-light" v-tooltip="'+1 компонент'" style="float: right;"><eva-icon style="padding-top: 5px;" name="plus" animation="pulse" fill="white"></eva-icon></a>
+          </div>
         </li>
         <li class="add-components">
           <a class="btn-small btn work_menu" style="width: 100%" href="#" @click="addChoComp()">
@@ -160,6 +162,7 @@
 
 <script>
 import { numeric, required, minLength } from 'vuelidate/lib/validators'
+import reject from 'lodash/reject'
 export default {
   props: {
     status: {
@@ -197,6 +200,11 @@ export default {
     // eslint-disable-next-line no-undef
     M.updateTextFields()
   },
+  computed: {
+    getCatForChange: function () {
+      return this.catbyIdTable.filter(i => i.status === '2')
+    }
+  },
   destroyed () {
     if (this.select && this.select.destroy) {
       this.select.destroy()
@@ -210,8 +218,18 @@ export default {
         this.catbyIdTable[idx].zeroNeed++
       }
     },
+    delthiscomp (component) {
+      this.realamountAllComp = []
+      const idx = this.catbyIdTable.findIndex(c => c.id === component.id)
+      if (this.catbyIdTable[idx].zeroNeed < component.howleft) {
+        this.catbyIdTable[idx].zeroNeed--
+      }
+    },
     addChoComp () {
-      for (const choiceCom of this.catbyIdTable) {
+      this.realamountAllComp = []
+      const tableComp = this.catbyIdTable.filter(i => i.status === '2')
+      for (const choiceCom of tableComp) {
+        console.log(choiceCom)
         if (choiceCom.zeroNeed > 0) {
           const compData = {
             idpos: choiceCom.id,
@@ -221,8 +239,16 @@ export default {
             zeroNeed: choiceCom.zeroNeed,
             unitstr: choiceCom.unitstr
           }
-          this.allComponents.push(compData)
+          if (this.allComponents.filter(c => c.idpos === choiceCom.id).length) {
+            const idx = this.allComponents.findIndex(c => c.idpos === choiceCom.id)
+            this.allComponents[idx].zeroNeed = choiceCom.zeroNeed
+          } else {
+            this.allComponents.push(compData)
+          }
           this.realamountAllComp.push(compData.realamount * choiceCom.zeroNeed)
+        } if (choiceCom.zeroNeed < 1) {
+          const idx = this.allComponents.findIndex(c => c.idpos === choiceCom.id)
+          this.allComponents = reject(this.allComponents, this.allComponents[idx])
         }
       }
       this.realSummRa = 0
@@ -258,7 +284,6 @@ export default {
           areaId: this.$route.params.areaId,
           titlepos: this.titlepos,
           articlepos: this.articlepos,
-          components: this.status === '4' ? this.allComponents : '',
           amount: this.status === '2' ? '' : this.amount,
           realamount: this.status === '4' ? this.realSummRa : this.realamount,
           howleft: this.howleft === '4' ? null : this.howleft,
@@ -271,13 +296,20 @@ export default {
         this.$modal.hide('add-position')
         this.$modal.hide('add-postor')
         this.$emit('added', newposition)
+        this.$message('Успешно добавлено')
         if (this.status === '4') {
-          for (const comp of this.allComponents) {
-            const howleft = comp.howleft - comp.zeroNeed * this.howleft
-            this.$store.dispatch('insertCompInProduct', { areaId: this.$route.params.areaId, id: comp.idpos, howleft: howleft })
+          for (const components of this.allComponents) {
+            await this.$store.dispatch('addComponentsForMany', { areaId: this.$route.params.areaId,
+              howleft: components.howleft,
+              idpos: components.idpos,
+              realamount: components.realamount,
+              titlepos: components.titlepos,
+              zeroNeed: components.zeroNeed,
+              idmany: newposition.id })
+            const howleft = components.howleft - components.zeroNeed * this.howleft
+            this.$store.dispatch('insertCompInProduct', { areaId: this.$route.params.areaId, id: components.idpos, howleft: howleft })
           }
         }
-        this.$message('Успешно добавлено')
       } catch (e) {
 
       }

@@ -55,6 +55,7 @@ export default {
     this.rights = await this.$store.dispatch('fetchRights', { areaId })
     if (this.rights === 'Admin' || this.rights[0].storageAccept === 'mydvg1cool') {
       this.storageMove = await this.$store.dispatch('fetchStorageMove', { areaId })
+      this.storageMove.reverse()
       this.loading = false
     } else {
       this.$router.push('/' + areaId)

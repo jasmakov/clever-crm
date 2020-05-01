@@ -73,6 +73,25 @@ export default {
         throw e
       }
     },
+    async deleteColumn ({ commit, dispatch }, { areaId, catId, id }) {
+      try {
+        const uid = await dispatch('getUid')
+        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
+        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
+        if (takeId.length) {
+          for (const inviter of takeId) {
+            const currentRef = await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/categories/${catId}/columnDefs/${id}`)
+            currentRef.remove()
+          }
+        } else {
+          const currentRef = await firebase.database().ref(`/users/${uid}/workareas/${areaId}/categories/${catId}/columnDefs/${id}`)
+          currentRef.remove()
+        }
+      } catch (e) {
+        commit('setError', e)
+        throw e
+      }
+    },
     // Получение столбцов для отключение столбцов
     async fetchColumnForOff ({ dispatch, commit }, { catId, areaId }) {
       try {
@@ -87,44 +106,6 @@ export default {
         } else {
           const colCho = (await firebase.database().ref(`/users/${uid}/workareas/${areaId}/categories/${catId}/columnDefs`).once('value')).val() || {}
           return { ...colCho }
-        }
-      } catch (e) {
-        commit('setError', e)
-        throw e
-      }
-    },
-    // Получение уже добавленных столбцов
-    async fetchMyColById ({ dispatch, commit }, { catId, areaId, id }) {
-      try {
-        const uid = await dispatch('getUid')
-        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
-        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
-        if (takeId.length) {
-          for (const inviter of takeId) {
-            const colCho = (await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/categories/${catId}/columnDefs`).child(id).once('value')).val() || {}
-            return { ...colCho }
-          }
-        } else {
-          const colCho = (await firebase.database().ref(`/users/${uid}/workareas/${areaId}/categories/${catId}/columnDefs`).child(id).once('value')).val() || {}
-          return { ...colCho }
-        }
-      } catch (e) {
-        commit('setError', e)
-        throw e
-      }
-    },
-    // Скрытие столбцов после добавление
-    async updateColForChild ({ commit, dispatch }, { catid, areaId, hide, id }) {
-      try {
-        const uid = await dispatch('getUid')
-        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
-        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
-        if (takeId.length) {
-          for (const inviter of takeId) {
-            await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/categories/${catid}/columnDefs`).child(id).update({ hide })
-          }
-        } else {
-          await firebase.database().ref(`/users/${uid}/workareas/${areaId}/categories/${catid}/columnDefs`).child(id).update({ hide })
         }
       } catch (e) {
         commit('setError', e)

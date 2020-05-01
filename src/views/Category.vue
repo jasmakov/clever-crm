@@ -272,12 +272,10 @@ export default {
       this.loadingtable = false
     },
     async updateCol (column) {
-      this.columnDefsChoice.push(column)
+      this.columnDefsChoice.unshift(column)
     },
     addCols (columns) {
-      const idx = this.columnDefsChoice.findIndex(c => c.groupId === columns.id)
-      this.columnDefsChoice[idx].hide = columns.hide
-      this.updateCount++
+      this.columnDefsChoice = reject(this.columnDefsChoice, columns)
     },
     updateModule (module) {
       const idx = this.newrecord.findIndex(c => c.id === module.rowid)

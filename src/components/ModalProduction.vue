@@ -79,6 +79,7 @@ export default {
   async mounted () {
     const areaId = this.$route.params.areaId
     this.allProduction = await this.$store.dispatch('fetchAllPosition', { areaId })
+    this.allCompForMany = await this.$store.dispatch('fetchComponentsForMany', { areaId })
     // eslint-disable-next-line no-undef
     M.updateTextFields()
     this.loading = false
@@ -143,7 +144,7 @@ export default {
           this.$emit('producted', productData)
           const howleft = item.howhave + item.howleft
           this.$store.dispatch('insertCompInProduct', { areaId: this.$route.params.areaId, id: item.id, howleft: howleft })
-          for (const comp of item.components) {
+          for (const comp of this.allCompForMany) {
             const component = await this.$store.dispatch('fetchStoragePositionById', { posid: comp.idpos, areaId: this.$route.params.areaId })
             const howleftComp = component.howleft - comp.zeroNeed * item.howhave
             this.$store.dispatch('insertCompInProduct', { areaId: this.$route.params.areaId, id: comp.idpos, howleft: howleftComp })

@@ -8,11 +8,11 @@
           <span>{{column.headerName}}</span>
         </label>
         <label v-if="column.field === 'moduleOrder' && checkStrSta.status === '1'">
-          <input type="checkbox" :id="column.field" :value="column.groupId" :checked="fetchColOff[column.groupId] && fetchColOff[column.groupId].hide === false" @click="check($event)">
+          <input type="checkbox" :id="column.field" :value="column.groupId" :checked="fetchColOff[column.groupId]" @click="check($event, column)">
           <span>{{column.headerName}}</span>
         </label>
         <label v-if="column.field !== 'numIdx' && column.field !== 'moduleOrder'">
-          <input type="checkbox" :id="column.field" :value="column.groupId" :checked="fetchColOff[column.groupId] && fetchColOff[column.groupId].hide === false" @click="check($event)">
+          <input type="checkbox" :id="column.field" :value="column.groupId" :checked="fetchColOff[column.groupId]" @click="check($event, column)">
           <span>{{column.headerName}}</span>
         </label>
       </p>
@@ -47,37 +47,22 @@ export default {
     this.checkStrSta = await this.$store.dispatch('fetchStorageStatus', { areaId })
   },
   methods: {
-    async check (e) {
+    async check (e, column) {
       const id = e.target.value
       const areaId = this.$route.params.areaId
       const catId = this.$route.params.catId
       if (e.target.checked) {
         try {
-          const getMyCol = await this.$store.dispatch('fetchMyColById', { catId, areaId, id })
-          if (id !== getMyCol.id) {
-            const getColbyId = await this.$store.dispatch('fetchColumnsById', { id })
-            await this.$store.dispatch('addColumns', { areaId, catId, id, getColbyId })
-            this.$emit('updated', { ...getColbyId })
-          } else {
-            this.$store.dispatch('updateColForChild', {
-              catid: this.$route.params.catId,
-              areaId: this.$route.params.areaId,
-              hide: false,
-              id: e.target.value
-            })
-            this.$emit('added', { hide: false, id: e.target.value })
-          }
+          const getColbyId = await this.$store.dispatch('fetchColumnsById', { id })
+          this.$store.dispatch('addColumns', { areaId, catId, id, getColbyId })
+          this.$emit('updated', { ...getColbyId })
+          this.$message('Вы добавили столбец')
         } catch (e) {}
       } else {
         try {
-          this.$store.dispatch('updateColForChild', {
-            catid: this.$route.params.catId,
-            areaId: this.$route.params.areaId,
-            hide: true,
-            id: e.target.value
-          })
-          this.$emit('added', { hide: true, id: e.target.value })
-          this.$message('Вы успешно изменили столбцы')
+          this.$store.dispatch('deleteColumn', { areaId, catId, id })
+          this.$emit('added', column)
+          this.$message('Вы удалили столбец')
         } catch (e) {}
       }
     },

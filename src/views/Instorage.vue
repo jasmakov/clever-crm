@@ -55,6 +55,7 @@ export default {
     if (this.rights === 'Admin' || this.rights[0].storageAccept === 'mydvg1cool') {
       this.catbyId = await this.$store.dispatch('fetchStorageCategoryById', { id, areaId })
       this.catbyIdTable = await this.$store.dispatch('fetchStorageCategoryTableById', { id, areaId })
+      this.catbyIdTable.reverse()
       this.categoryStorage = await this.$store.dispatch('fetchStorageCategory', { areaId })
     } else {
       this.$router.push('/' + areaId)

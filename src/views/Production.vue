@@ -66,6 +66,7 @@ export default {
     if (this.rights === 'Admin' || this.rights[0].storageAccept === 'mydvg1cool') {
       this.categories = await this.$store.dispatch('fetchCategories', areaId)
       this.productionTable = await this.$store.dispatch('fetchProductsForProduction', { areaId })
+      this.productionTable.reverse()
       this.loading = false
     } else {
       this.$router.push('/' + areaId)

@@ -109,11 +109,11 @@
           >Введите еще {{$v.realamount.$params.minLength.min - realamount.length}} символов</small>
         </div>
         <div class="input-field" v-if="status === '4'">
-          <a href="#" class="btn waves-effect waves-light" @click="$modal.show('add-compbyid')">
+          <a href="#" class="btn waves-effect waves-light" @click="editCompForMany">
             Выберите компонент (-ы) готового продукта
           </a>
-          <p v-for="componts of this.posbyId.components" :key="componts.id">
-            {{componts.titlepos}} - {{componts.zeroNeed}} {{componts.unitstr}}
+          <p v-for="componts of allComponents" :key="componts.id">
+            {{componts.titlepos}} *{{componts.zeroNeed}}
           </p>
           <p>Себестоимость: {{realSummRa}} руб.</p>
         </div>
@@ -141,9 +141,11 @@
           </div>
           <ul class="components">
             <li v-for="category of catbyIdTable" :key="category.id + category.zeroNeed">
-              <a v-if="category.status === '2' || category.status === '3'" class="btn-small btn work_menu" style="width: 100%" href="#" @click="addthiscomp(category)">
+              <div v-if="category.status === '2' || category.status === '3'" class="btn-small btn work_menu" style="width: 100%">
+                <a href="#" @click="delthiscomp(category)" class="waves-effect waves-light" v-tooltip="'-1 компонент'" style="padding: 6px;"><eva-icon name="minus" animation="pulse" fill="white"></eva-icon></a>
                 {{category.titlepos}} ({{ category.zeroNeed }} - {{category.howleft}})
-              </a>
+                <a href="#" @click="addthiscomp(category)" class="waves-effect waves-light" v-tooltip="'+1 компонент'" style="padding: 6px;"><eva-icon name="plus" animation="pulse" fill="white"></eva-icon></a>
+              </div>
             </li>
             <li class="add-components">
               <a class="btn-small btn work_menu" style="width: 100%" href="#" @click="addChoComp()">
@@ -159,6 +161,7 @@
 
 <script>
 import { numeric, required, minLength } from 'vuelidate/lib/validators'
+import reject from 'lodash/reject'
 export default {
   props: {
     catbyIdTable: {
@@ -167,12 +170,17 @@ export default {
     },
     posbyId: {
       required: true
+    },
+    compForMany: {
+      required: true,
+      type: Array
     }
   },
   data: () => ({
     select: null,
     allComponents: [],
     realamountAllComp: [],
+    compNow: [],
     titlepos: '',
     articlepos: '',
     realSummRa: '0',
@@ -195,10 +203,11 @@ export default {
     this.articlepos = this.posbyId.articlepos
     this.amount = this.posbyId.amount
     this.realamount = this.posbyId.realamount
+    this.realSummRa = this.posbyId.realamount
     this.unitstr = this.posbyId.unitstr
     this.howleft = this.posbyId.howleft
     this.status = this.posbyId.status
-    this.realSummRa = this.posbyId.amount
+    this.allComponents = this.compForMany
     // eslint-disable-next-line no-undef
     M.updateTextFields()
     // eslint-disable-next-line no-undef
@@ -210,6 +219,51 @@ export default {
     }
   },
   methods: {
+    addthiscomp (component) {
+      this.realamountAllComp = []
+      const idx = this.catbyIdTable.findIndex(c => c.id === component.id)
+      this.catbyIdTable[idx].zeroNeed++
+    },
+    delthiscomp (component) {
+      this.realamountAllComp = []
+      const idx = this.catbyIdTable.findIndex(c => c.id === component.id)
+      this.catbyIdTable[idx].zeroNeed--
+    },
+    addChoComp () {
+      this.realamountAllComp = []
+      const tableComp = this.catbyIdTable.filter(i => i.status === '2')
+      for (const choiceCom of tableComp) {
+        if (choiceCom.zeroNeed > 0) {
+          const compData = {
+            idpos: choiceCom.id,
+            titlepos: choiceCom.titlepos,
+            realamount: choiceCom.realamount,
+            howleft: choiceCom.howleft,
+            zeroNeed: choiceCom.zeroNeed,
+            unitstr: choiceCom.unitstr
+          }
+          if (this.allComponents.filter(c => c.idpos === choiceCom.id).length) {
+            const idx = this.allComponents.findIndex(c => c.idpos === choiceCom.id)
+            this.allComponents[idx].zeroNeed = choiceCom.zeroNeed
+          } else {
+            this.allComponents.push(compData)
+          }
+          this.realamountAllComp.push(compData.realamount * choiceCom.zeroNeed)
+        } if (choiceCom.zeroNeed < 1) {
+          const idx = this.allComponents.findIndex(c => c.idpos === choiceCom.id)
+          this.$store.dispatch('deleteCompFromManyEdit', { id: choiceCom.id, areaId: this.$route.params.areaId })
+          this.allComponents = reject(this.allComponents, this.allComponents[idx])
+        }
+      }
+      this.realSummRa = 0
+      for (let i = 0; i < this.realamountAllComp.length; i++) {
+        this.realSummRa = this.realSummRa + parseInt(this.realamountAllComp[i])
+      }
+      this.$modal.hide('add-compbyid')
+    },
+    editCompForMany () {
+      this.$modal.show('add-compbyid')
+    },
     async submitStorage () {
       if (this.status === '1' || this.status === '3') {
         if (this.$v.$invalid) {
@@ -235,12 +289,41 @@ export default {
         titlepos: this.titlepos,
         unitstr: this.unitstr,
         amount: this.amount,
-        realamount: this.realamount,
+        realamount: this.status === '4' ? this.realSummRa : this.realamount,
         articlepos: this.articlepos,
         howleft: this.howleft
       }
       try {
         await this.$store.dispatch('updateStoragePosotionCategory', formData)
+        this.$modal.hide('edit-postor')
+        this.$message('Успешно сохранено')
+        for (const components of this.allComponents) {
+          if (this.status === '4') {
+            if (this.compForMany.filter(c => c.id === components.id)[0].id) {
+              await this.$store.dispatch('updateCompForMany', {
+                id: components.id,
+                areaId: this.$route.params.areaId,
+                zeroNeed: components.zeroNeed
+              })
+            } else {
+              await this.$store.dispatch('addComponentsForMany', {
+                areaId: this.$route.params.areaId,
+                howleft: components.howleft,
+                idpos: components.idpos,
+                realamount: components.realamount,
+                titlepos: components.titlepos,
+                zeroNeed: components.zeroNeed,
+                idmany: this.posbyId.posid
+              })
+            }
+            const howleft = components.howleft - components.zeroNeed * this.howleft
+            await this.$store.dispatch('insertCompInProduct', {
+              areaId: this.$route.params.areaId,
+              id: components.idpos,
+              howleft: howleft
+            })
+          }
+        }
         if (formData.howleft !== this.posbyId.howleft) {
           const currentDateWithFormat = new Date().toJSON().slice(0, 10).replace(/-/g, '/') + ' ' + new Date().toJSON().slice(11, 19)
           const moveData = {
@@ -257,8 +340,6 @@ export default {
           }
           this.$store.dispatch('createMoveTable', moveData)
         }
-        this.$modal.hide('edit-postor')
-        this.$message('Успешно сохранено')
         this.$emit('edited', formData)
       } catch (e) {
 

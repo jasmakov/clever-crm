@@ -44,23 +44,6 @@ export default {
         throw e
       }
     },
-    async updateCategory ({ commit, dispatch }, { catid, areaId, hide, id }) {
-      try {
-        const uid = await dispatch('getUid')
-        const invForMeId = (await firebase.database().ref(`/users/${uid}/workareasInv`).orderByChild('areaId').equalTo(areaId).once('value')).val() || {}
-        const takeId = Object.keys(invForMeId).map(key => ({ ...invForMeId[key], id: key }))
-        if (takeId.length) {
-          for (const inviter of takeId) {
-            await firebase.database().ref(`/users/${inviter.inviterId}/workareas/${inviter.areaId}/records/${catid}/columnDefs/`).child(id).update({ hide })
-          }
-        } else {
-          await firebase.database().ref(`/users/${uid}/workareas/${areaId}/records/${catid}/columnDefs/`).child(id).update({ hide })
-        }
-      } catch (e) {
-        commit('setError', e)
-        throw e
-      }
-    },
     async updateIdxColumn ({ commit, dispatch }, { catid, areaId, field, colnum }) {
       try {
         const uid = await dispatch('getUid')
