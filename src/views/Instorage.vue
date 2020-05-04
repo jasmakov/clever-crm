@@ -3,7 +3,7 @@
   <div class="instorage" v-else>
     <Catbar :categories="categories" :rights="rights"/>
     <StorBar @fickthatshit="updatethatshit" />
-    <h3 style="text-align: center; width: 100%;">Внутренний склад - {{catbyId.titlestr}}</h3>
+    <h3 style="text-align: center; width: 100%;">{{catbyId.titlestr}}</h3>
     <router-link
       class="btn-small btn work_menu"
       style="float: left"
@@ -16,7 +16,16 @@
       href="#" @click.prevent="showaddpos()">
       Добавить позицию
     </a>
-    <StorageTable :key="catbyIdTable.length + updateCount" :catbyIdTable="catbyIdTable" :categoryStorage="categoryStorage"/>
+    <StorageTable :key="catbyIdTable.length + updateCount" :catbyIdTable="itemsPages" :categoryStorage="categoryStorage" @deleted="deletedPosition"/>
+    <Paginate
+      v-model="page"
+      :page-count="pageCount"
+      :click-handler="pageChangeHandler"
+      :prev-text="'Назад'"
+      :next-text="'Вперед'"
+      :container-class="'pagination'"
+      :page-class="'waves-effect'"
+    />
     <modal  name="add-postor" transition="nice-modal-fade"
             :min-width="200"
             :min-height="200"
@@ -33,8 +42,11 @@ import ModalAddStrPos from '../components/ModalAddStrPos'
 import StorageTable from '../components/StorageTable'
 import Catbar from '../components/app/Catbar'
 import StorBar from '../components/app/StorBar'
+import paginationMixin from '@/mixins/pagination.mixin'
+import reject from 'lodash/reject'
 export default {
   name: 'instorage',
+  mixins: [paginationMixin],
   metaInfo: {
     title: 'Склад'
   },
@@ -56,6 +68,7 @@ export default {
       this.catbyId = await this.$store.dispatch('fetchStorageCategoryById', { id, areaId })
       this.catbyIdTable = await this.$store.dispatch('fetchStorageCategoryTableById', { id, areaId })
       this.catbyIdTable.reverse()
+      this.setupPagination(this.catbyIdTable)
       this.categoryStorage = await this.$store.dispatch('fetchStorageCategory', { areaId })
     } else {
       this.$router.push('/' + areaId)
@@ -63,16 +76,19 @@ export default {
     this.loading = false
   },
   methods: {
+    deletedPosition (option) {
+      this.itemsPages = reject(this.itemsPages, option)
+    },
     updatethatshit (module) {
-      const idx = this.catbyIdTable.findIndex(c => c.id === module.id)
-      this.catbyIdTable[idx].howleft = module.howleft
+      const idx = this.itemsPages.findIndex(c => c.id === module.id)
+      this.itemsPages[idx].howleft = module.howleft
       this.updateCount++
     },
     async showaddpos () {
       this.$modal.show('add-postor')
     },
     addPosition (position) {
-      this.catbyIdTable.push(position)
+      this.itemsPages.unshift(position)
     }
   },
   components: {

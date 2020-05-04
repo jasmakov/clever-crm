@@ -30,7 +30,7 @@
             :clickToClose="false"
             width="20%"
             height="auto">
-      <ModalCat :checkStrSta="checkStrSta" :checkProdSta="checkProdSta" @created="addNewCategory" />
+      <ModalCat :checkStrSta="checkStrSta" :checkProdSta="checkProdSta" :categories="categories" @created="addNewCategory" />
     </modal>
   </div>
 </template>

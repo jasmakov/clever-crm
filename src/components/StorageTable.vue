@@ -17,7 +17,7 @@
 
       <tbody>
       <tr v-for="(catysId, idx) of catbyIdTable" :key="catysId.id">
-        <td>{{idx + 1}}</td>
+        <td>{{ catbyIdTable.length - idx }}</td>
         <td>{{catysId.titlepos}}</td>
         <td>{{catysId.articlepos}}</td>
         <td>{{catysId.unitstr}}</td>
@@ -125,7 +125,7 @@ export default {
         if (option.status === '2') {
           this.$store.dispatch('deletePosFromMany', { id: option.id, areaId: this.$route.params.areaId })
         }
-        this.catbyIdTable = reject(this.catbyIdTable, option)
+        this.$emit('deleted', option)
         this.$fire({
           title: option.titlepos + ' - удален',
           type: 'success',

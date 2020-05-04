@@ -21,8 +21,8 @@
         </thead>
 
         <tbody>
-        <tr v-for="(move, idx) of productionTable" :key="move.id">
-          <td>{{idx + 1}}</td>
+        <tr v-for="(move, idx) of itemsPages" :key="move.id">
+          <td>{{itemsPages.length - idx}}</td>
           <td>{{move.dateNow}}</td>
           <td>{{move.titlepos}}</td>
           <td>{{move.articlepos}}</td>
@@ -34,6 +34,15 @@
         </tr>
         </tbody>
       </table>
+      <Paginate
+        v-model="page"
+        :page-count="pageCount"
+        :click-handler="pageChangeHandler"
+        :prev-text="'Назад'"
+        :next-text="'Вперед'"
+        :container-class="'pagination'"
+        :page-class="'waves-effect'"
+      />
     </section>
     <modal  name="add-multprod" transition="nice-modal-fade"
             :min-width="200"
@@ -47,10 +56,12 @@
 </template>
 
 <script>
+import paginationMixin from '@/mixins/pagination.mixin'
 import Catbar from '../components/app/Catbar'
 import ModalProduction from '../components/ModalProduction'
 export default {
   name: 'storage',
+  mixins: [paginationMixin],
   metaInfo: {
     title: 'Производство'
   },
@@ -67,6 +78,7 @@ export default {
       this.categories = await this.$store.dispatch('fetchCategories', areaId)
       this.productionTable = await this.$store.dispatch('fetchProductsForProduction', { areaId })
       this.productionTable.reverse()
+      this.setupPagination(this.productionTable)
       this.loading = false
     } else {
       this.$router.push('/' + areaId)
@@ -86,7 +98,7 @@ export default {
       }
     },
     addedProduction (module) {
-      this.productionTable.push(module)
+      this.itemsPages.push(module)
     }
   }
 }

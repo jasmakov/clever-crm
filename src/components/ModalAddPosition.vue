@@ -187,7 +187,7 @@ export default {
     howleft: null
   }),
   validations: {
-    titlepos: { required, minLength: minLength(2) },
+    titlepos: { required, minLength: minLength(1) },
     articlepos: { numeric, required, minLength: minLength(1) },
     amount: { numeric, required, minLength: minLength(1) },
     realamount: { numeric, required, minLength: minLength(1) },
@@ -202,7 +202,7 @@ export default {
   },
   computed: {
     getCatForChange: function () {
-      return this.catbyIdTable.filter(i => i.status === '2')
+      return this.catbyIdTable.filter(i => i.status === '2' || i.status === '3')
     }
   },
   destroyed () {

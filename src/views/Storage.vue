@@ -37,17 +37,13 @@
           id="name"
           type="text"
           v-model.trim="titlestr"
-          :class="{invalid: ($v.titlestr.$dirty && !$v.titlestr.required) || ($v.titlestr.$dirty && !$v.titlestr.minLength)}"
+          :class="{invalid: ($v.titlestr.$dirty && !$v.titlestr.required)}"
         >
         <label for="name">Введите название категории</label>
         <small
           class="helper-text invalid"
           v-if="$v.titlestr.$dirty && !$v.titlestr.required"
         >Введите название категории</small>
-        <small
-          class="helper-text invalid"
-          v-else-if="$v.titlestr.$dirty && !$v.titlestr.minLength"
-        >Введите еще {{$v.titlestr.$params.minLength.min - titlestr.length}} символов</small>
       </div>
       <div class="input-field">
         <button class="btn waves-effect waves-light" type="submit">
@@ -63,7 +59,7 @@
 </template>
 
 <script>
-import { required, minLength } from 'vuelidate/lib/validators'
+import { required } from 'vuelidate/lib/validators'
 import Catbar from '../components/app/Catbar'
 import StorBar from '../components/app/StorBar'
 export default {
@@ -79,7 +75,7 @@ export default {
     categoryStorage: []
   }),
   validations: {
-    titlestr: { required, minLength: minLength(6) }
+    titlestr: { required }
   },
   async mounted () {
     const areaId = this.$route.params.areaId

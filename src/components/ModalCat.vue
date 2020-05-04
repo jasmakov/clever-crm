@@ -32,6 +32,10 @@
 import { required } from 'vuelidate/lib/validators'
 export default {
   props: {
+    categories: {
+      type: Array,
+      required: true
+    },
     checkStrSta: {
       required: true
     },
@@ -98,7 +102,7 @@ export default {
         if (this.title === 'Работа с клиентами') {
           const category = await this.$store.dispatch('createCategory', {
             areaId: await this.$route.params.areaId,
-            title: this.title,
+            title: this.title + ' - ' + (this.categories.length + 1),
             numIdx: 0,
             fio: 1,
             phoneNumberC: 2,
@@ -113,8 +117,7 @@ export default {
               {
                 field: 'numIdx',
                 headerName: '',
-                width: 100,
-                resizable: false,
+                width: 70,
                 cellRenderer: 'agGroupCellRenderer',
                 cellRendererParams: { checkbox: true },
                 editable: false,

@@ -19,8 +19,8 @@
                 </thead>
 
                 <tbody>
-                <tr v-for="(move, idx) of storageMove" :key="move.id">
-                    <td>{{idx + 1}}</td>
+                <tr v-for="(move, idx) of itemsPages" :key="move.id">
+                    <td>{{ itemsPages.length - idx }}</td>
                     <td>{{move.date}}</td>
                     <td>{{move.moveStatus}}</td>
                     <td>{{move.titlepos}}</td>
@@ -32,14 +32,25 @@
                 </tr>
                 </tbody>
             </table>
+            <Paginate
+              v-model="page"
+              :page-count="pageCount"
+              :click-handler="pageChangeHandler"
+              :prev-text="'Назад'"
+              :next-text="'Вперед'"
+              :container-class="'pagination'"
+              :page-class="'waves-effect'"
+            />
         </div>
     </div>
 </template>
 
 <script>
+import paginationMixin from '@/mixins/pagination.mixin'
 import Catbar from '../components/app/Catbar'
 export default {
   name: 'move-table',
+  mixins: [paginationMixin],
   metaInfo: {
     title: 'Cклад движение'
   },
@@ -56,6 +67,7 @@ export default {
     if (this.rights === 'Admin' || this.rights[0].storageAccept === 'mydvg1cool') {
       this.storageMove = await this.$store.dispatch('fetchStorageMove', { areaId })
       this.storageMove.reverse()
+      this.setupPagination(this.storageMove)
       this.loading = false
     } else {
       this.$router.push('/' + areaId)

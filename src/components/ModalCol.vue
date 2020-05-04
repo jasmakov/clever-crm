@@ -3,16 +3,16 @@
     <div class="input-field">
       <h6>Выбор столбцов</h6>
       <p v-for="column of GetAllCollumns" :key="column.groupId">
-        <label v-if="column.field === 'moduleOrder' && checkStrSta.status !== '1'">
+        <label v-if="column.children[0].field === 'nameMod' && checkStrSta.status === '1'">
+          <input type="checkbox" :id="column.children[0].field" :value="column.groupId" :checked="fetchColOff[column.groupId]" @click="check($event, column)">
+          <span>{{column.headerName}}</span>
+        </label>
+        <label v-if="column.children[0].field !== 'numIdx' && column.children[0].field !== 'nameMod'">
+          <input type="checkbox" :id="column.children[0].field" :value="column.groupId" :checked="fetchColOff[column.groupId]" @click="check($event, column)">
+          <span>{{column.headerName}}</span>
+        </label>
+        <label v-if="column.children[0].field === 'nameMod' && checkStrSta.status !== '1'">
           <input type="checkbox" disabled>
-          <span>{{column.headerName}}</span>
-        </label>
-        <label v-if="column.field === 'moduleOrder' && checkStrSta.status === '1'">
-          <input type="checkbox" :id="column.field" :value="column.groupId" :checked="fetchColOff[column.groupId]" @click="check($event, column)">
-          <span>{{column.headerName}}</span>
-        </label>
-        <label v-if="column.field !== 'numIdx' && column.field !== 'moduleOrder'">
-          <input type="checkbox" :id="column.field" :value="column.groupId" :checked="fetchColOff[column.groupId]" @click="check($event, column)">
           <span>{{column.headerName}}</span>
         </label>
       </p>
@@ -56,13 +56,11 @@ export default {
           const getColbyId = await this.$store.dispatch('fetchColumnsById', { id })
           this.$store.dispatch('addColumns', { areaId, catId, id, getColbyId })
           this.$emit('updated', { ...getColbyId })
-          this.$message('Вы добавили столбец')
         } catch (e) {}
       } else {
         try {
           this.$store.dispatch('deleteColumn', { areaId, catId, id })
           this.$emit('added', column)
-          this.$message('Вы удалили столбец')
         } catch (e) {}
       }
     },

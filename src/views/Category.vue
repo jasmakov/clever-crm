@@ -112,6 +112,7 @@ export default {
     const id = this.$route.params.catId
     const areaId = this.$route.params.areaId
     this.categories = await this.$store.dispatch('fetchCategories', areaId)
+    this.columnDefsChoice = await this.$store.dispatch('fetchColumnForChoice', { id, areaId })
     this.GetAllCollumns = await this.$store.dispatch('fetchColumns')
     this.rights = await this.$store.dispatch('fetchRights', { areaId })
     if (this.rights === 'Admin' || this.rights[0].rights[id].readCaty === 'mydvg1cool') {
@@ -155,19 +156,22 @@ export default {
           'status_back': 'data.status === "Возврат"',
           'status_cancel': 'data.status === "Отменен"'
         }
-        this.columnDefsChoice = await this.$store.dispatch('fetchColumnForChoice', { id, areaId })
         this.loading = false
-        this.loadingtable = true
-        const ColGrid = await this.gridOptions
-        const catyg = await this.$store.dispatch('fetchCategoryById', { id, areaId })
-        ColGrid.columnApi.moveColumn('fio', catyg.fio)
-        ColGrid.columnApi.moveColumn('phoneNumberC', catyg.phoneNumberC)
-        ColGrid.columnApi.moveColumn('moduleOrder', catyg.moduleOrder)
-        ColGrid.columnApi.moveColumn('addressClient', catyg.addressClient)
-        ColGrid.columnApi.moveColumn('tkClient', catyg.tkClient)
-        ColGrid.columnApi.moveColumn('commentWrite', catyg.commentWrite)
-        ColGrid.columnApi.moveColumn('status', catyg.status)
-        this.loadingtable = false
+        if (this.columnDefsChoice.length < 2) {
+          this.$modal.show('add-col')
+        } else {
+          this.loadingtable = true
+          const ColGrid = await this.gridOptions
+          const catyg = await this.$store.dispatch('fetchCategoryById', { id, areaId })
+          ColGrid.columnApi.moveColumn('fio', catyg.fio)
+          ColGrid.columnApi.moveColumn('phoneNumberC', catyg.phoneNumberC)
+          ColGrid.columnApi.moveColumn('moduleOrder', catyg.moduleOrder)
+          ColGrid.columnApi.moveColumn('addressClient', catyg.addressClient)
+          ColGrid.columnApi.moveColumn('tkClient', catyg.tkClient)
+          ColGrid.columnApi.moveColumn('commentWrite', catyg.commentWrite)
+          ColGrid.columnApi.moveColumn('status', catyg.status)
+          this.loadingtable = false
+        }
       } else {
         this.loading = false
         this.loadingtable = false

@@ -319,6 +319,16 @@ table, th, td {
     max-height: 600px!important;
     overflow-y: auto!important;
 }
+.v--modal-overlay {
+  z-index: 1009!important;
+}
+.input-field {
+  margin-top: 0rem;
+  margin-bottom: 5px;
+}
+.ag-theme-balham .ag-ltr .ag-row-group-leaf-indent {
+  margin-left: 0px;
+}
 .page-subtitle h4, .page-title {
     margin-bottom: 1rem;
 }
